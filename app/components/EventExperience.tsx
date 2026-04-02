@@ -169,49 +169,59 @@ export default function EventExperience({
       <audio id="event-audio" src={musicUrl} preload="auto" />
 
       {!isOpen ? (
-        <section
-          className="relative flex min-h-screen items-center justify-center overflow-hidden px-6 py-16"
-          style={{
-            backgroundImage: `linear-gradient(rgba(16, 11, 8, 0.65), rgba(16, 11, 8, 0.82)), url(${heroBackground})`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-          }}
-        >
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(223,176,93,0.2),transparent_45%)]" />
-          <div className="relative mx-auto flex max-w-6xl flex-col items-center gap-10 lg:flex-row">
-            <div className="max-w-xl text-center lg:text-left">
-              <p className="font-legan text-sm uppercase tracking-[0.4em] text-[#d5b37b]">
-                {settings.subtitle}
-              </p>
-              <h1 className="mt-5 font-ovo text-5xl leading-tight sm:text-6xl">
-                {settings.eventName}
-              </h1>
-              <p className="mt-6 text-base leading-8 text-white/78">
-                {settings.heroDescription}
-              </p>
-              <div className="mt-8 space-y-2">
-                <p className="text-xs uppercase tracking-[0.35em] text-white/45">
-                  Invited Guest
+        <section className="flex min-h-screen w-full flex-col md:flex-row">
+          <div
+            className="hidden md:flex md:w-2/3 items-end justify-center pb-12"
+            style={{
+              backgroundImage: `url(${heroSide})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }}
+          >
+            <p className="font-ovo text-lg uppercase tracking-[5px] text-white">
+              {settings.eventName}
+            </p>
+          </div>
+
+          <div
+            className="relative flex min-h-screen w-full items-center justify-center overflow-hidden px-6 py-16 md:w-1/3"
+            style={{
+              backgroundImage: `linear-gradient(rgba(14, 10, 7, 0.62), rgba(14, 10, 7, 0.84)), url(${heroBackground})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }}
+          >
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.08),transparent_40%)]" />
+            <div className="relative flex h-full w-full max-w-md flex-col justify-between py-16 text-center">
+              <div className="space-y-4">
+                <p className="font-legan text-sm uppercase tracking-[0.32em] text-white">
+                  {settings.subtitle}
                 </p>
-                <p className="font-ovo text-2xl">
-                  {displayedGuestName}
+                <h1 className="font-ovo text-3xl uppercase tracking-[0.2em] text-white sm:text-4xl">
+                  {settings.eventName}
+                </h1>
+                <p className="font-legan text-sm uppercase tracking-[0.18em] text-white/90">
+                  {formatDate(settings.eventDate)}
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={() => setIsOpen(true)}
-                className="mt-10 rounded-full bg-[#d5b37b] px-7 py-3 text-sm font-semibold uppercase tracking-[0.24em] text-[#140f09] transition hover:bg-[#f0c78c]"
-              >
-                {settings.primaryButtonLabel}
-              </button>
-            </div>
 
-            <div className="w-full max-w-md rounded-[2rem] border border-white/10 bg-black/20 p-4 backdrop-blur">
-              <img
-                src={heroSide}
-                alt={settings.eventName}
-                className="h-[28rem] w-full rounded-[1.5rem] object-cover"
-              />
+              <div>
+                <p className="text-lg uppercase tracking-[0.28em] text-white">
+                  {invite && invite.inviteType === "named" && invite.guestName
+                    ? `Dear ${invite.guestName},`
+                    : "Welcome,"}
+                </p>
+                <p className="mx-auto mt-5 max-w-sm text-sm leading-7 text-white/80">
+                  {settings.heroDescription}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setIsOpen(true)}
+                  className="mt-8 rounded-full border border-white bg-white px-6 py-2 text-xs uppercase tracking-[0.28em] text-black transition hover:bg-transparent hover:text-white"
+                >
+                  {settings.primaryButtonLabel}
+                </button>
+              </div>
             </div>
           </div>
         </section>
