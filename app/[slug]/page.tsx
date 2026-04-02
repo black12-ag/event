@@ -13,7 +13,6 @@ export default function Home({ params: { slug } }: ParamsProps) {
   const [name, setName] = useState<string>("");
 
   useEffect(() => {
-    console.log('slug:', slug);
     if (slug.startsWith("to%3A")) {
       const extractedName = decodeURIComponent(slug.slice(5)).replace(
         /%20/g,
@@ -32,7 +31,7 @@ export default function Home({ params: { slug } }: ParamsProps) {
   return (
     <div className="h-screen">
       <ScreenStart />
-      {showContent && <MainContent name={name} />} {/* Tampilkan MainContent */}
+      {showContent && <MainContent name={name} />}
     </div>
   );
 }

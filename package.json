@@ -5,13 +5,13 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:cf": "next build && rm -rf .next/cache",
     "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
     "@next/font": "^14.2.10",
-    "mongodb": "^6.9.0",
-    "mongoose": "^8.6.2",
+    "@supabase/supabase-js": "^2.45.4",
     "next": "14.2.10",
     "react": "^18",
     "react-dom": "^18",
@@ -20,6 +20,7 @@
     "react-type-animation": "^3.2.0"
   },
   "devDependencies": {
+    "@next/swc-darwin-arm64": "^14.2.10",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",

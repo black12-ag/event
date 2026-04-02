@@ -19,7 +19,6 @@ const WeddingScreen = ({ name }: WeddingScreenProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const audioRef = useRef(null);
 
-  // Untuk fade-in pertama kali
   useEffect(() => {
     const timer = setTimeout(() => {
       setFadeClass("opacity-100");
@@ -31,7 +30,6 @@ const WeddingScreen = ({ name }: WeddingScreenProps) => {
   const handleOpen = () => {
     setIsOpen(!isOpen);
     if (!isOpen && audioRef.current) {
-      // Play music when "Open" is clicked
       (audioRef.current as HTMLAudioElement).play();
     }
   };
@@ -85,9 +83,9 @@ const WeddingScreen = ({ name }: WeddingScreenProps) => {
     const video = document.querySelector("iframe");
     if (video) {
       if (isSlide8InView) {
-        video.src += "&autoplay=1"; // Mulai video
+        video.src += "&autoplay=1";
       } else {
-        video.src = video.src.replace("&autoplay=1", ""); // Hentikan video
+        video.src = video.src.replace("&autoplay=1", "");
       }
     }
   }, [isSlide8InView]);
@@ -96,11 +94,10 @@ const WeddingScreen = ({ name }: WeddingScreenProps) => {
     <div
       className={`h-screen w-screen flex flex-col md:flex-row ${fadeClass} transition-opacity duration-1000`}
     >
-      {/* Gambar sisi kiri Wide Untuk Komputer */}
       <div
         className="md:flex justify-center hidden items-end pb-12 w-2/3 h-1/2 md:h-full"
         style={{
-          backgroundImage: `url(/foto_1_samping.jpg)`, //refer to base 1st photo
+          backgroundImage: `url(/foto_1_samping.jpg)`,
           backgroundSize: "cover",
           backgroundPosition: "center",
         }}
@@ -112,7 +109,6 @@ const WeddingScreen = ({ name }: WeddingScreenProps) => {
         </div>
       </div>
 
-      {/* Konten teks sisi kanan bisa scroll untuk pc */}
       <div className=" md:w-1/3 h-full overflow-y-scroll snap-y snap-mandatory scroll-smooth">
         <div
           id="backgroundWedding"
@@ -200,7 +196,6 @@ const WeddingScreen = ({ name }: WeddingScreenProps) => {
                 backgroundPosition: "center",
               }}
             >
-              {/* Display the content when the button is clicked */}
               <div
                 ref={slide2Ref}
                 className={`fadeInMove ${isSlide2InView ? "active" : ""}  `}
@@ -267,7 +262,7 @@ const WeddingScreen = ({ name }: WeddingScreenProps) => {
                   className={`text-xl md:text-5xl  text-white font-ovo fadeInMove ${isSlide4InView ? " active" : ""
                     }`}
                 >
-                  A journey in love
+                  Our Journey in Love
                 </h1>
                 <h3
                   ref={slide4Ref}
@@ -338,7 +333,7 @@ const WeddingScreen = ({ name }: WeddingScreenProps) => {
                   }  fadeInMove flex items-center flex-col pt-32 `}
               >
                 <h3 className="uppercase font-legan text-xs tracking-wide mt-5 mb-2">
-                  save our date
+                  Save Our Date
                 </h3>
                 <h1 className="text-2xl w-[200px] text-center text-white  font-ovo uppercase">
                   {new Date(config.eventDate).toLocaleDateString("en-US", {
@@ -401,7 +396,7 @@ const WeddingScreen = ({ name }: WeddingScreenProps) => {
                   }  fadeInMove flex items-center flex-col`}
               >
                 <h1 className="text-2xl text-center text-white  font-ovo">
-                  ALMOST TIME FOR OURCELEBRATION
+                  Almost Time for Our Celebration
                 </h1>
                 {/* Countdown Timer */}
                 <CountdownTimer />
@@ -536,7 +531,6 @@ const WeddingScreen = ({ name }: WeddingScreenProps) => {
               </div>
             </div>
 
-            {/* SLIDE AKHIR */}
             <div
               className="snap-start text-white h-screen flex flex-col justify-end pt-16 pb-16 px-12 "
               style={{

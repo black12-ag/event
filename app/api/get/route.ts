@@ -1,26 +1,27 @@
-import { NextResponse } from "next/server"; // For new Next.js API route handling
-import connectToDatabase from "@/lib/db";
-import Wish from "@/lib/models/Wish";
+import { NextResponse } from "next/server";
+import supabase from "@/lib/db";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
-  const page = parseInt(searchParams.get("page") || "1", 10); // Get page number from query, default to 1
-  const limit = parseInt(searchParams.get("limit") || "5", 10); // Get limit from query, default to 5
+  const page = parseInt(searchParams.get("page") || "1", 10);
+  const limit = parseInt(searchParams.get("limit") || "5", 10);
+
+  const from = (page - 1) * limit;
+  const to = from + limit - 1;
 
   try {
-    await connectToDatabase();
-
     // Fetch paginated wishes
-    const wishes = await Wish.find()
-      .sort({ createdAt: -1 })
-      .skip((page - 1) * limit)
-      .limit(limit);
+    const { data: wishes, count, error } = await supabase
+      .from('wishes')
+      .select('*', { count: 'exact' })
+      .order('created_at', { ascending: false })
+      .range(from, to);
 
-    const totalWishes = await Wish.countDocuments();
+    if (error) throw error;
 
     return NextResponse.json({
       wishes,
-      totalPages: Math.ceil(totalWishes / limit),
+      totalPages: Math.ceil((count || 0) / limit),
       currentPage: page,
     });
   } catch (error) {
