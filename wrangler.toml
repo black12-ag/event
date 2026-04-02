@@ -6,3 +6,8 @@ pages_build_output_dir = ".vercel/output"
 [vars]
 NODE_VERSION = "20.18.0"
 NPM_CONFIG_LEGACY_PEER_DEPS = "true"
+SUPABASE_URL = "https://dybvkumxqsxcomnypnxd.supabase.co"
+SUPABASE_ANON_KEY = "sb_publishable_hwWLP23XELfjoG8KrCZRKQ_l6lJCqQG"
+NEXT_PUBLIC_SUPABASE_URL = "https://dybvkumxqsxcomnypnxd.supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY = "sb_publishable_hwWLP23XELfjoG8KrCZRKQ_l6lJCqQG"
+ADMIN_PIN = "2580"
