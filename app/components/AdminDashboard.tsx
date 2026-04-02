@@ -10,8 +10,15 @@ type AdminDashboardProps = {
 const emptySettings: EventSettings = {
   eventName: "",
   subtitle: "",
+  openingEyebrow: "",
+  openingTitle: "",
+  openingDescription: "",
   heroTitle: "",
   heroDescription: "",
+  heroGuestPrefix: "",
+  heroPendingLabel: "",
+  heroAttendingLabel: "",
+  heroNotAttendingLabel: "",
   openingNote: "",
   eventDate: "",
   venueName: "",
@@ -49,9 +56,16 @@ const emptySummary: InviteSummary = {
 const fieldHelp: Record<string, string> = {
   eventName: "Shown as the main event name on the public opening screen and footer.",
   subtitle: "Small line above the event name on the opening screen.",
-  heroTitle: "Large hero headline guests see after opening the invitation.",
-  heroDescription: "Intro text shown on the first invitation screen.",
-  openingNote: "Main welcome message shown in the public hero section.",
+  openingEyebrow: "Small line shown before the guest clicks Open Invitation.",
+  openingTitle: "Main title shown on the very first screen before the invitation is opened.",
+  openingDescription: "Opening text shown before the guest clicks Open Invitation.",
+  heroTitle: "Large headline shown after the invitation opens in the same hero area.",
+  heroDescription: "Supporting text shown after the invitation opens.",
+  heroGuestPrefix: "Short word shown before a named guest, such as Dear or Welcome.",
+  heroPendingLabel: "Status label shown in the hero when the guest has not responded yet.",
+  heroAttendingLabel: "Status label shown in the hero after the guest confirms attendance.",
+  heroNotAttendingLabel: "Status label shown in the hero when the guest declines.",
+  openingNote: "Extra welcome note shown in the hero after opening.",
   eventDate: "Used for the event date display and live countdown.",
   venueName: "Venue name shown in the event details and map section.",
   venueAddress: "Full address shown to guests on the public page.",
@@ -294,7 +308,7 @@ export default function AdminDashboard({
               value={pin}
               onChange={(event) => setPin(event.target.value)}
               className="w-full rounded-2xl border border-white/10 bg-[#0d0a08] px-4 py-3 text-center text-2xl tracking-[0.6em] text-white outline-none"
-              placeholder="2580"
+              placeholder="Enter 4-digit PIN"
             />
             {error ? <p className="text-sm text-rose-300">{error}</p> : null}
             <button
@@ -430,10 +444,16 @@ export default function AdminDashboard({
                 </p>
                 <div className="mt-5 grid gap-4 md:grid-cols-2">
                   {[
+                    ["openingEyebrow", "Opening Eyebrow"],
+                    ["openingTitle", "Opening Title"],
                     ["eventName", "Event Name"],
                     ["subtitle", "Subtitle"],
                     ["heroTitle", "Hero Title"],
-                    ["primaryButtonLabel", "Hero Button Label"],
+                    ["primaryButtonLabel", "Open Button Label"],
+                    ["heroGuestPrefix", "Guest Prefix"],
+                    ["heroPendingLabel", "Pending Status Label"],
+                    ["heroAttendingLabel", "Attending Status Label"],
+                    ["heroNotAttendingLabel", "Not Attending Status Label"],
                   ].map(([field, label]) => (
                     <label key={String(field)} className="grid gap-2 text-sm text-white/75">
                       {label}
@@ -452,6 +472,7 @@ export default function AdminDashboard({
                 </div>
                 <div className="mt-4 grid gap-4">
                   {[
+                    ["openingDescription", "Opening Description"],
                     ["heroDescription", "Hero Description"],
                     ["openingNote", "Opening Note"],
                   ].map(([field, label]) => (

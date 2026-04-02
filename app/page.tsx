@@ -1,3 +1,5 @@
+export const runtime = "edge";
+
 import EventExperience from "./components/EventExperience";
 import { getEventSettings, getMediaAssets, listWishes } from "@/lib/event-data";
 

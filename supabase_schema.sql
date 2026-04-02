@@ -4,8 +4,15 @@ create table if not exists public.event_settings (
   id uuid primary key default gen_random_uuid(),
   event_name text not null,
   subtitle text not null default '',
+  opening_eyebrow text not null default '',
+  opening_title text not null default '',
+  opening_description text not null default '',
   hero_title text not null,
   hero_description text not null default '',
+  hero_guest_prefix text not null default 'Dear',
+  hero_pending_label text not null default 'Awaiting your RSVP',
+  hero_attending_label text not null default 'Confirmed attendance',
+  hero_not_attending_label text not null default 'Unable to attend',
   opening_note text not null default '',
   event_date timestamptz not null,
   venue_name text not null,
@@ -75,6 +82,13 @@ create table if not exists public.media_assets (
 );
 
 alter table public.invites add column if not exists is_generic boolean not null default false;
+alter table public.event_settings add column if not exists opening_eyebrow text not null default '';
+alter table public.event_settings add column if not exists opening_title text not null default '';
+alter table public.event_settings add column if not exists opening_description text not null default '';
+alter table public.event_settings add column if not exists hero_guest_prefix text not null default 'Dear';
+alter table public.event_settings add column if not exists hero_pending_label text not null default 'Awaiting your RSVP';
+alter table public.event_settings add column if not exists hero_attending_label text not null default 'Confirmed attendance';
+alter table public.event_settings add column if not exists hero_not_attending_label text not null default 'Unable to attend';
 
 create index if not exists invites_slug_idx on public.invites(slug);
 create index if not exists invites_created_at_idx on public.invites(created_at desc);

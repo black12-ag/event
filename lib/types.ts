@@ -2,8 +2,15 @@ export type EventSettings = {
   id?: string;
   eventName: string;
   subtitle: string;
+  openingEyebrow: string;
+  openingTitle: string;
+  openingDescription: string;
   heroTitle: string;
   heroDescription: string;
+  heroGuestPrefix: string;
+  heroPendingLabel: string;
+  heroAttendingLabel: string;
+  heroNotAttendingLabel: string;
   openingNote: string;
   eventDate: string;
   venueName: string;

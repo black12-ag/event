@@ -14,8 +14,15 @@ const AUDIO_BUCKET = "event-audio";
 const toSnakeEventSettings = (settings: EventSettings) => ({
   event_name: settings.eventName,
   subtitle: settings.subtitle,
+  opening_eyebrow: settings.openingEyebrow,
+  opening_title: settings.openingTitle,
+  opening_description: settings.openingDescription,
   hero_title: settings.heroTitle,
   hero_description: settings.heroDescription,
+  hero_guest_prefix: settings.heroGuestPrefix,
+  hero_pending_label: settings.heroPendingLabel,
+  hero_attending_label: settings.heroAttendingLabel,
+  hero_not_attending_label: settings.heroNotAttendingLabel,
   opening_note: settings.openingNote,
   event_date: settings.eventDate,
   venue_name: settings.venueName,
@@ -45,8 +52,16 @@ const toCamelEventSettings = (item: any): EventSettings => ({
   id: item.id,
   eventName: item.event_name ?? defaultEventSettings.eventName,
   subtitle: item.subtitle ?? defaultEventSettings.subtitle,
+  openingEyebrow: item.opening_eyebrow ?? defaultEventSettings.openingEyebrow,
+  openingTitle: item.opening_title ?? defaultEventSettings.openingTitle,
+  openingDescription: item.opening_description ?? defaultEventSettings.openingDescription,
   heroTitle: item.hero_title ?? defaultEventSettings.heroTitle,
   heroDescription: item.hero_description ?? defaultEventSettings.heroDescription,
+  heroGuestPrefix: item.hero_guest_prefix ?? defaultEventSettings.heroGuestPrefix,
+  heroPendingLabel: item.hero_pending_label ?? defaultEventSettings.heroPendingLabel,
+  heroAttendingLabel: item.hero_attending_label ?? defaultEventSettings.heroAttendingLabel,
+  heroNotAttendingLabel:
+    item.hero_not_attending_label ?? defaultEventSettings.heroNotAttendingLabel,
   openingNote: item.opening_note ?? defaultEventSettings.openingNote,
   eventDate: item.event_date ?? defaultEventSettings.eventDate,
   venueName: item.venue_name ?? defaultEventSettings.venueName,
@@ -447,6 +462,16 @@ export const submitInviteRsvp = async (
     await supabase.from(WISHES_TABLE).update(payload).eq("id", existing.id);
   } else {
     await supabase.from(WISHES_TABLE).insert([payload]);
+  }
+
+  if (invite.inviteType === "open" && name.trim()) {
+    await supabase
+      .from(INVITES_TABLE)
+      .update({
+        guest_name: name.trim(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", invite.id);
   }
 
   // Hook for MariaDB sync

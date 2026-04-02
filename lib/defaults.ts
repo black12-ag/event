@@ -3,9 +3,17 @@ import { EventSettings, MediaAsset } from "./types";
 export const defaultEventSettings: EventSettings = {
   eventName: "Buna House Grand Opening",
   subtitle: "A new coffee experience in Addis Ababa",
+  openingEyebrow: "A new coffee experience in Addis Ababa",
+  openingTitle: "Buna House Grand Opening",
+  openingDescription:
+    "Join us for an evening of Ethiopian coffee, community, music, and a warm welcome as we open the doors to Buna House.",
   heroTitle: "You Are Invited To Our Opening Celebration",
   heroDescription:
-    "Join us for an evening of Ethiopian coffee, community, music, and a warm welcome as we open the doors to Buna House.",
+    "We are delighted to welcome you to our opening celebration. Come enjoy coffee, music, and the warmth of our first evening together.",
+  heroGuestPrefix: "Dear",
+  heroPendingLabel: "Awaiting your RSVP",
+  heroAttendingLabel: "Confirmed attendance",
+  heroNotAttendingLabel: "Unable to attend",
   openingNote:
     "We would be honored to celebrate this special beginning with you.",
   eventDate: "2026-05-10T16:00:00",

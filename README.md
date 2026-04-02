@@ -29,12 +29,6 @@ This project turns the old invitation flow into a live event platform with:
 - editable Google Maps link and embedded map URL
 - editable Instagram, Facebook, TikTok, WhatsApp, and Telegram links
 
-Default admin PIN:
-
-```text
-2580
-```
-
 ## Tech Stack
 
 - Next.js 14
@@ -80,6 +74,8 @@ SUPABASE_SERVICE_ROLE_KEY=
 ADMIN_PIN=2580
 ADMIN_SESSION_SECRET=
 ```
+
+Do not commit a real `ADMIN_PIN` in source control. Set it only in your local `.env` file and hosting provider secrets/environment settings.
 
 Apply the database and storage schema from:
 
