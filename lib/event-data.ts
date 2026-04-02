@@ -1,4 +1,3 @@
-import crypto from "crypto";
 import { defaultEventSettings, defaultMediaAssets } from "./defaults";
 import { getSupabaseAdmin } from "./db";
 import { EventSettings, Invite, InviteSummary, MediaAsset, Wish } from "./types";
@@ -128,13 +127,16 @@ const toCamelWish = (item: any): Wish => ({
 
 const mediaDefaultsMap = new Map(defaultMediaAssets.map((item) => [item.slotKey, item]));
 
+const randomHex = (length: number) =>
+  globalThis.crypto.randomUUID().replace(/-/g, "").slice(0, length);
+
 const getSlug = (value: string) => {
   const base = value
     .toLowerCase()
     .trim()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "");
-  const token = crypto.randomBytes(3).toString("hex");
+  const token = randomHex(6);
   return `${base || "guest"}-${token}`;
 };
 
@@ -251,7 +253,7 @@ export const uploadMediaAsset = async (slotKey: string, type: "image" | "audio",
   const supabase = getSupabaseAdmin();
   const bucket = type === "audio" ? AUDIO_BUCKET : IMAGE_BUCKET;
   const extension = file.name.split(".").pop() || "bin";
-  const path = `${slotKey}/${Date.now()}-${crypto.randomBytes(4).toString("hex")}.${extension}`;
+  const path = `${slotKey}/${Date.now()}-${randomHex(8)}.${extension}`;
   const buffer = Buffer.from(await file.arrayBuffer());
 
   const { error: uploadError } = await supabase.storage

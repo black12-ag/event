@@ -3,7 +3,6 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { FaFacebookF, FaInstagram, FaTelegramPlane, FaTiktok, FaWhatsapp } from "react-icons/fa";
-import { IoIosArrowUp } from "react-icons/io";
 import { useInView } from "react-intersection-observer";
 import { EventSettings, Invite, MediaAsset, Wish } from "@/lib/types";
 
@@ -117,14 +116,37 @@ export default function EventExperience({
   );
 
   const displayedGuestName =
+    invite?.guestName
+      ? invite.guestName
+      : invite && invite.inviteType === "named" && invite.guestName
+      ? invite.guestName
+      : "Honored Guest";
+
+  const openingGuestName =
     invite && invite.inviteType === "named" && invite.guestName
       ? invite.guestName
       : "Honored Guest";
 
   const inviteGreeting =
     invite && invite.inviteType === "named" && invite.guestName
-      ? `Dear ${invite.guestName},`
+      ? `${settings.heroGuestPrefix} ${invite.guestName},`
       : "Welcome,";
+
+  const heroStatusLabel =
+    invite?.attendanceStatus === "attending"
+      ? settings.heroAttendingLabel
+      : invite?.attendanceStatus === "not_attending"
+      ? settings.heroNotAttendingLabel
+      : settings.heroPendingLabel;
+
+  const heroStatusDetail =
+    invite?.attendanceStatus === "attending"
+      ? `${invite.bringingCount} guest${invite.bringingCount === 1 ? "" : "s"} confirmed`
+      : invite?.attendanceStatus === "not_attending"
+      ? "Thank you for letting us know"
+      : invite
+      ? "Open the invitation and respond when you are ready"
+      : "Explore the event details below";
 
   const { ref: slide1Ref, inView: slide1InView } = useInView({ threshold: 0.4 });
   const { ref: slide2Ref, inView: slide2InView } = useInView({ threshold: 0.4 });
@@ -252,50 +274,95 @@ export default function EventExperience({
           }}
         >
           <div className="text-center p-5 flex flex-col h-full justify-between py-20 w-full">
-            <div className="gap-y-2 md:gap-y-4 flex flex-col">
-              <h5 className="text-sm font-legan text-white uppercase tracking-wide">
-                {settings.subtitle}
-              </h5>
-              <h1 className="text-2xl md:text-3xl font-ovo text-white uppercase">
-                {settings.eventName}
-              </h1>
-              <h5 className="text-sm font-legan text-white uppercase tracking-wide">
-                {formatDate(settings.eventDate, { hour: undefined, minute: undefined })}
-              </h5>
-            </div>
-            <div>
-              <p className="mt-5 text-lg uppercase tracking-widest text-white">
-                {inviteGreeting}
-              </p>
-              <p className="mx-auto mt-5 max-w-sm text-sm font-legan text-white/90">
-                {settings.heroDescription}
-              </p>
-              {!isOpen ? (
-                <button
-                  className="animate-bounce mt-5 px-5 py-1 uppercase text-xs border border-white hover:text-white hover:bg-transparent rounded-full bg-white text-black transition"
-                  onClick={handleOpen}
-                >
-                  {settings.primaryButtonLabel}
-                </button>
-              ) : (
-                <IoIosArrowUp className="mx-auto mt-20 animate-upDown text-white text-3xl" />
-              )}
-            </div>
+            {!isOpen ? (
+              <>
+                <div className="gap-y-2 md:gap-y-4 flex flex-col">
+                  <h5 className="text-sm font-legan text-white uppercase tracking-wide">
+                    {settings.openingEyebrow || settings.subtitle}
+                  </h5>
+                  <h1 className="text-2xl md:text-3xl font-ovo text-white uppercase">
+                    {settings.openingTitle || settings.eventName}
+                  </h1>
+                  <h5 className="text-sm font-legan text-white uppercase tracking-wide">
+                    {formatDate(settings.eventDate, { hour: undefined, minute: undefined })}
+                  </h5>
+                </div>
+                <div>
+                  <p className="mt-5 text-lg uppercase tracking-widest text-white">
+                    {invite && invite.inviteType === "named"
+                      ? `${settings.heroGuestPrefix} ${openingGuestName},`
+                      : "Welcome,"}
+                  </p>
+                  <p className="mx-auto mt-5 max-w-sm text-sm font-legan text-white/90">
+                    {settings.openingDescription || settings.heroDescription}
+                  </p>
+                  <button
+                    className="animate-bounce mt-5 px-5 py-1 uppercase text-xs border border-white hover:text-white hover:bg-transparent rounded-full bg-white text-black transition"
+                    onClick={handleOpen}
+                  >
+                    {settings.primaryButtonLabel}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div ref={slide1Ref} className={`mx-auto flex h-full w-full max-w-md flex-col justify-between fadeInMove ${slide1InView || isOpen ? "active" : ""}`}>
+                <div className="gap-y-2 md:gap-y-4 flex flex-col">
+                  <h5 className="text-sm font-legan text-white uppercase tracking-wide">
+                    {settings.subtitle}
+                  </h5>
+                  <h1 className="text-2xl md:text-3xl font-ovo text-white uppercase">
+                    {settings.heroTitle}
+                  </h1>
+                  <h5 className="text-sm font-legan text-white uppercase tracking-wide">
+                    {formatDate(settings.eventDate, { hour: undefined, minute: undefined })}
+                  </h5>
+                </div>
+                <div className="rounded-[1.75rem] border border-white/15 bg-black/35 p-6 backdrop-blur-sm">
+                  <p className="font-legan text-xs uppercase tracking-[0.35em] text-white/70">
+                    {settings.eventName}
+                  </p>
+                  <h2 className="mt-4 font-ovo text-3xl uppercase text-white">
+                    {displayedGuestName}
+                  </h2>
+                  <div className="mt-4 inline-flex rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs uppercase tracking-[0.24em] text-white">
+                    {heroStatusLabel}
+                  </div>
+                  <p className="mt-4 text-sm font-legan text-white/90">
+                    {settings.heroDescription}
+                  </p>
+                  <p className="mt-3 text-sm font-legan text-[#d8c3a2]">
+                    {heroStatusDetail}
+                  </p>
+                  <p className="mt-4 text-sm font-legan text-white/80">
+                    {settings.openingNote}
+                  </p>
+                  <div className="mt-6 flex flex-wrap gap-3">
+                    <Link
+                      href={settings.mapLink}
+                      target="_blank"
+                      className="cursor-pointer hover:text-white/70 text-sm rounded-full flex items-center gap-x-2 text-center font-legan bg-[#808080] w-fit px-4 py-2 text-white"
+                    >
+                      {settings.directionsButtonLabel}
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={toggleMusic}
+                      className="cursor-pointer hover:text-white/70 text-sm rounded-full flex items-center gap-x-2 text-center font-legan bg-[#4E4E4E] w-fit px-4 py-2 text-white"
+                    >
+                      {isPlaying ? "Pause Music" : "Play Music"}
+                    </button>
+                  </div>
+                  <p className="mt-6 text-xs uppercase tracking-[0.28em] text-white/50">
+                    Scroll down to explore the full invitation
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         </section>
 
         {isOpen && (
           <>
-            <Slide backgroundImage={heroBackground} className="flex pt-12 p-5 px-12">
-              <div ref={slide1Ref} className={`fadeInMove ${slide1InView ? "active" : ""}`}>
-                <h1 className="text-xl md:text-2xl font-ovo tracking-wide text-white uppercase">
-                  {settings.heroTitle}
-                </h1>
-                <p className="text-sm mt-5 font-legan">{settings.openingNote}</p>
-                <p className="text-6xl mt-5 font-wonder">{settings.eventName}</p>
-              </div>
-            </Slide>
-
             <Slide backgroundImage={storyImage} className="flex items-end pb-16 px-12">
               <div ref={slide2Ref} className={`fadeInMove ${slide2InView ? "active" : ""}`}>
                 <p className="font-legan text-sm my-2 uppercase">Guest Invitation</p>

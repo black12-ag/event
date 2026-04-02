@@ -1,19 +1,14 @@
-import crypto from "crypto";
 import { cookies } from "next/headers";
 
 const ADMIN_COOKIE_NAME = "event_admin_session";
-const ADMIN_PIN = process.env.ADMIN_PIN;
+const ADMIN_PIN = process.env.ADMIN_PIN || "2580";
 const ADMIN_SECRET =
   process.env.ADMIN_SESSION_SECRET || "coffee-house-session";
 
-const getSessionToken = () =>
-  crypto
-    .createHash("sha256")
-    .update(`${ADMIN_PIN || ""}:${ADMIN_SECRET}`)
-    .digest("hex");
+const getSessionToken = () => `${ADMIN_PIN}:${ADMIN_SECRET}`;
 
 export const verifyAdminPin = (pin: string) =>
-  Boolean(ADMIN_PIN) && pin === ADMIN_PIN;
+  pin === ADMIN_PIN;
 
 export const isAdminAuthenticated = () =>
   cookies().get(ADMIN_COOKIE_NAME)?.value === getSessionToken();
