@@ -102,6 +102,7 @@ const mediaHelp: Record<string, string> = {
 export default function AdminDashboard({
   initialAuthenticated,
 }: AdminDashboardProps) {
+  const [notice, setNotice] = useState<{ type: "success" | "error" | "info"; message: string } | null>(null);
   const [activePanel, setActivePanel] = useState<
     "setup" | "media" | "invites" | "tracking"
   >("setup");
@@ -115,13 +116,29 @@ export default function AdminDashboard({
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [mediaBusyKey, setMediaBusyKey] = useState("");
-  const [mediaMessage, setMediaMessage] = useState("");
+  const [inviteBusyId, setInviteBusyId] = useState("");
+  const [creatingInvite, setCreatingInvite] = useState(false);
   const [newInvite, setNewInvite] = useState({
     guestName: "",
     allowedGuests: 1,
     notes: "",
     inviteType: "named" as "named" | "open",
   });
+
+  const showNotice = (type: "success" | "error" | "info", message: string) => {
+    setNotice({ type, message });
+  };
+
+  const clearNotice = () => setNotice(null);
+
+  const getResponseMessage = async (response: Response, fallback: string) => {
+    try {
+      const payload = await response.json();
+      return payload?.message || fallback;
+    } catch {
+      return fallback;
+    }
+  };
 
   const loadDashboard = async () => {
     setLoading(true);
@@ -135,6 +152,12 @@ export default function AdminDashboard({
 
       if (sessionRes.status === 401 || settingsRes.status === 401) {
         setAuthenticated(false);
+        showNotice("error", "Your admin session expired. Please sign in again.");
+        return;
+      }
+
+      if (!settingsRes.ok || !invitesRes.ok || !mediaRes.ok) {
+        showNotice("error", "We could not load all dashboard data. Please refresh and try again.");
         return;
       }
 
@@ -146,6 +169,9 @@ export default function AdminDashboard({
       setInvites(invitesPayload.invites || []);
       setSummary(invitesPayload.summary || emptySummary);
       setMedia(mediaPayload.media || []);
+      clearNotice();
+    } catch {
+      showNotice("error", "We could not connect to Supabase right now. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -158,29 +184,43 @@ export default function AdminDashboard({
   const handleLogin = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError("");
-    const response = await fetch("/api/admin/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ pin }),
-    });
-    if (!response.ok) {
-      setError("Incorrect PIN.");
-      return;
+    clearNotice();
+    try {
+      const response = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pin }),
+      });
+      if (!response.ok) {
+        setError("Incorrect PIN. Please try again.");
+        return;
+      }
+      setAuthenticated(true);
+      setPin("");
+      showNotice("success", "Dashboard unlocked.");
+    } catch {
+      setError("Unable to sign in right now. Please refresh and try again.");
     }
-    setAuthenticated(true);
-    setPin("");
   };
 
   const handleSaveSettings = async () => {
     setSaving(true);
-    const response = await fetch("/api/admin/settings", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(settings),
-    });
-    if (response.ok) {
+    clearNotice();
+    try {
+      const response = await fetch("/api/admin/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(settings),
+      });
+      if (!response.ok) {
+        showNotice("error", await getResponseMessage(response, "We could not save the event settings."));
+        return;
+      }
       const payload = await response.json();
       setSettings(payload.settings);
+      showNotice("success", "Event settings saved.");
+    } catch {
+      showNotice("error", "We could not save the event settings. Please try again.");
     }
     setSaving(false);
   };
@@ -188,73 +228,126 @@ export default function AdminDashboard({
   const handleMediaUpload = async (slotKey: string, type: "image" | "audio", file: File | null) => {
     if (!file) return;
     setMediaBusyKey(slotKey);
-    setMediaMessage("");
-    const formData = new FormData();
-    formData.append("slotKey", slotKey);
-    formData.append("type", type);
-    formData.append("file", file);
+    clearNotice();
+    try {
+      const formData = new FormData();
+      formData.append("slotKey", slotKey);
+      formData.append("type", type);
+      formData.append("file", file);
 
-    const response = await fetch("/api/admin/media", {
-      method: "POST",
-      body: formData,
-    });
+      const response = await fetch("/api/admin/media", {
+        method: "POST",
+        body: formData,
+      });
 
-    if (response.ok) {
+      if (!response.ok) {
+        showNotice("error", await getResponseMessage(response, "We could not upload that file."));
+        return;
+      }
       const payload = await response.json();
       setMedia(payload.media);
       if (slotKey === "background-music") {
         setSettings((current) => ({ ...current, musicUrl: payload.updated.public_url }));
       }
-      setMediaMessage("Media updated.");
-    } else {
-      setMediaMessage("Unable to upload that file.");
+      showNotice("success", `${mediaHelp[slotKey] || "Media slot"} updated.`);
+    } catch {
+      showNotice("error", "We could not upload that file. Please try again.");
     }
     setMediaBusyKey("");
   };
 
   const handleMediaClear = async (slotKey: string) => {
     setMediaBusyKey(slotKey);
-    setMediaMessage("");
-    const response = await fetch("/api/admin/media", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ slotKey }),
-    });
-    if (response.ok) {
+    clearNotice();
+    try {
+      const response = await fetch("/api/admin/media", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slotKey }),
+      });
+      if (!response.ok) {
+        showNotice("error", await getResponseMessage(response, "We could not reset that media slot."));
+        return;
+      }
       const payload = await response.json();
       setMedia(payload.media);
-      setMediaMessage("Media slot reset.");
-    } else {
-      setMediaMessage("Unable to clear media.");
+      showNotice("success", "Media slot reset to the current default.");
+    } catch {
+      showNotice("error", "We could not reset that media slot. Please try again.");
     }
     setMediaBusyKey("");
   };
 
   const handleInviteCreate = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const response = await fetch("/api/admin/invites", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newInvite),
-    });
-    if (response.ok) {
+    clearNotice();
+    if (newInvite.inviteType === "named" && !newInvite.guestName.trim()) {
+      showNotice("error", "Please enter a guest name for a named invite.");
+      return;
+    }
+    setCreatingInvite(true);
+    try {
+      const response = await fetch("/api/admin/invites", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newInvite),
+      });
+      if (!response.ok) {
+        showNotice("error", await getResponseMessage(response, "We could not create that invite."));
+        return;
+      }
       setNewInvite({ guestName: "", allowedGuests: 1, notes: "", inviteType: "named" });
-      loadDashboard();
+      await loadDashboard();
+      showNotice("success", "Invite created successfully.");
+    } catch {
+      showNotice("error", "We could not create that invite. Please try again.");
+    } finally {
+      setCreatingInvite(false);
     }
   };
 
   const handleInviteUpdate = async (invite: Invite) => {
-    await fetch(`/api/admin/invites/${invite.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(invite),
-    });
-    loadDashboard();
+    clearNotice();
+    if (invite.inviteType === "named" && !invite.guestName.trim()) {
+      showNotice("error", "Named invites must have a guest name.");
+      return;
+    }
+    setInviteBusyId(invite.id);
+    try {
+      const response = await fetch(`/api/admin/invites/${invite.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(invite),
+      });
+      if (!response.ok) {
+        showNotice("error", await getResponseMessage(response, "We could not save that invite."));
+        return;
+      }
+      await loadDashboard();
+      showNotice("success", "Invite updated.");
+    } catch {
+      showNotice("error", "We could not save that invite. Please try again.");
+    } finally {
+      setInviteBusyId("");
+    }
   };
 
   const handleInviteDelete = async (id: string) => {
-    await fetch(`/api/admin/invites/${id}`, { method: "DELETE" });
-    loadDashboard();
+    clearNotice();
+    setInviteBusyId(id);
+    try {
+      const response = await fetch(`/api/admin/invites/${id}`, { method: "DELETE" });
+      if (!response.ok) {
+        showNotice("error", await getResponseMessage(response, "We could not delete that invite."));
+        return;
+      }
+      await loadDashboard();
+      showNotice("success", "Invite deleted.");
+    } catch {
+      showNotice("error", "We could not delete that invite. Please try again.");
+    } finally {
+      setInviteBusyId("");
+    }
   };
 
   const groupedMedia = useMemo(
@@ -277,19 +370,21 @@ export default function AdminDashboard({
   const shareInvite = async (invite: Invite) => {
     const inviteLink = `${window.location.origin}/${invite.slug}`;
     const text = `${buildShareText(invite)} ${inviteLink}`;
-    if (navigator.share) {
-      try {
+    try {
+      if (navigator.share) {
         await navigator.share({
           title: settings.eventName,
           text: buildShareText(invite),
           url: inviteLink,
         });
+        showNotice("success", "Share sheet opened.");
         return;
-      } catch {
-        // Fall through to clipboard if the user cancels or sharing is unavailable.
       }
+      await navigator.clipboard.writeText(text);
+      showNotice("success", "Invite link copied.");
+    } catch {
+      showNotice("error", "We could not share that link on this device.");
     }
-    await navigator.clipboard.writeText(text);
   };
 
   if (!authenticated) {
@@ -415,6 +510,19 @@ export default function AdminDashboard({
           <p className="mt-4 text-sm leading-7 text-white/62">
             Work one step at a time. The organizer does not need to use every section on every visit.
           </p>
+          {notice ? (
+            <div
+              className={`mt-4 rounded-2xl px-4 py-3 text-sm ${
+                notice.type === "success"
+                  ? "bg-emerald-500/15 text-emerald-200"
+                  : notice.type === "error"
+                  ? "bg-rose-500/15 text-rose-200"
+                  : "bg-white/10 text-white"
+              }`}
+            >
+              {notice.message}
+            </div>
+          ) : null}
         </div>
 
         {activePanel === "setup" ? (
@@ -430,7 +538,8 @@ export default function AdminDashboard({
               <button
                 type="button"
                 onClick={handleSaveSettings}
-                className="rounded-full bg-[#d5b37b] px-5 py-3 text-xs font-semibold uppercase tracking-[0.28em] text-[#120f0c]"
+                disabled={saving}
+                className="rounded-full bg-[#d5b37b] px-5 py-3 text-xs font-semibold uppercase tracking-[0.28em] text-[#120f0c] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {saving ? "Saving..." : "Save"}
               </button>
@@ -687,9 +796,6 @@ export default function AdminDashboard({
               <p className="mt-3 text-sm leading-7 text-white/62">
                 Replace any image or music file and it will update the same place on the public page.
               </p>
-              {mediaMessage ? (
-                <p className="mt-3 text-sm text-[#f1d5a4]">{mediaMessage}</p>
-              ) : null}
               <div className="mt-6 space-y-5">
                 {groupedMedia.map((item) => (
                   <div key={item.slotKey} className="rounded-[1.5rem] border border-white/8 bg-[#0c0907] p-4">
@@ -798,9 +904,10 @@ export default function AdminDashboard({
                 />
                 <button
                   type="submit"
-                  className="rounded-full bg-[#d5b37b] px-5 py-3 text-xs font-semibold uppercase tracking-[0.28em] text-[#120f0c]"
+                  disabled={creatingInvite}
+                  className="rounded-full bg-[#d5b37b] px-5 py-3 text-xs font-semibold uppercase tracking-[0.28em] text-[#120f0c] disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  Add Invite
+                  {creatingInvite ? "Creating Invite..." : "Add Invite"}
                 </button>
               </form>
             </div>
@@ -822,6 +929,15 @@ export default function AdminDashboard({
           </div>
 
           <div className="mt-8 grid gap-5">
+            {invites.length === 0 ? (
+              <div className="rounded-[1.5rem] border border-dashed border-white/12 bg-[#0c0907] p-8 text-center">
+                <p className="font-ovo text-2xl text-white">No guest links yet</p>
+                <p className="mt-3 text-sm leading-7 text-white/62">
+                  Create your first named invite or open share link in step 3, and it will appear here
+                  for editing, sharing, and tracking.
+                </p>
+              </div>
+            ) : null}
             {invites.map((invite) => {
               const inviteLink =
                 typeof window === "undefined"
@@ -907,9 +1023,15 @@ export default function AdminDashboard({
                     <button
                       type="button"
                       onClick={async () => {
-                        await navigator.clipboard.writeText(inviteLink);
+                        try {
+                          await navigator.clipboard.writeText(inviteLink);
+                          showNotice("success", "Invite link copied.");
+                        } catch {
+                          showNotice("error", "We could not copy that link on this device.");
+                        }
                       }}
                       className="rounded-full border border-white/10 px-5 py-2 text-xs uppercase tracking-[0.25em]"
+                      disabled={inviteBusyId === invite.id}
                     >
                       Copy Link
                     </button>
@@ -917,6 +1039,7 @@ export default function AdminDashboard({
                       type="button"
                       onClick={() => shareInvite(invite)}
                       className="rounded-full border border-white/10 px-5 py-2 text-xs uppercase tracking-[0.25em]"
+                      disabled={inviteBusyId === invite.id}
                     >
                       Share
                     </button>
@@ -940,15 +1063,17 @@ export default function AdminDashboard({
                       type="button"
                       onClick={() => handleInviteUpdate(invite)}
                       className="rounded-full bg-[#d5b37b] px-5 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-[#120f0c]"
+                      disabled={inviteBusyId === invite.id}
                     >
-                      Save
+                      {inviteBusyId === invite.id ? "Saving..." : "Save"}
                     </button>
                     <button
                       type="button"
                       onClick={() => handleInviteDelete(invite.id)}
                       className="rounded-full border border-rose-300/25 px-5 py-2 text-xs uppercase tracking-[0.25em] text-rose-300"
+                      disabled={inviteBusyId === invite.id}
                     >
-                      Delete
+                      {inviteBusyId === invite.id ? "Working..." : "Delete"}
                     </button>
                   </div>
                 </div>
