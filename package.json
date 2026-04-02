@@ -3,11 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "predev": "rm -rf .next",
     "dev": "next dev",
     "build": "next build && rm -rf .next/cache",
     "start": "next start",
     "lint": "next lint",
-    "pages:build": "npx @cloudflare/next-on-pages"
+    "pages:build": "npx @cloudflare/next-on-pages --build-command 'npm run build'"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.4",
