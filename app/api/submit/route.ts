@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
-import supabase from "@/lib/db";
+import { getSupabase } from "@/lib/db";
 
 export async function POST(req: Request) {
   try {
     const { name, attendance, guests, message } = await req.json();
+    const supabase = getSupabase();
     
     const { error } = await supabase
       .from('wishes')

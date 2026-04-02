@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import supabase from "@/lib/db";
+import { getSupabase } from "@/lib/db";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -10,6 +10,7 @@ export async function GET(req: Request) {
   const to = from + limit - 1;
 
   try {
+    const supabase = getSupabase();
     // Fetch paginated wishes
     const { data: wishes, count, error } = await supabase
       .from('wishes')
