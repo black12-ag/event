@@ -1,0 +1,109 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  --font-ovo: 'Ovo', serif;
+  --font-legan: 'Legan', serif;
+  --font-wonder: 'Wonder', sans-serif;
+  --font-thesignature: 'Thesignature', sans-serif;
+}
+
+/* @media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+} */
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+
+.fade-in {
+  animation: fadeIn 1s ease-in-out;
+}
+
+#backgroundWedding {
+  background-size: cover;
+  background-position: center;
+  background-image: url(../public/foto_2.jpg);
+  background-repeat: no-repeat;
+  transition: 5s;
+  animation-name: animate;
+  animation-direction: alternate-reverse;
+  animation-play-state: running;
+  animation-timing-function: ease-in-out;
+  animation-duration: 10s;
+  animation-fill-mode: forwards;
+  animation-iteration-count: infinite;
+  background-color: #0a0a0a;
+}
+
+@keyframes animate {
+ 0% {
+  background-image: url(../public/foto_2.jpg);
+ }
+ 45% {
+  background-image: url(../public/foto_4.jpg);
+ }
+  85% {
+    background-image: url(../public/foto_1.jpg);
+  }
+  100% {
+    background-image: url(../public/foto_2.jpg);
+  }
+}
+
+#backgroundWedding > div {
+  animation: fade 5s infinite;
+}
+
+/* Animasi fade-in dan gerakan */
+.fadeMain {
+  opacity: 0;
+  transition: opacity 3s ease-in;
+}
+.fadeMain2 {
+  opacity: 0;
+  transition: opacity 0.8s ease-out;
+}
+
+.fadeInMove {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 1.5s ease-out, transform 1.5s ease-out;
+}
+.fadeInMoveSlow {
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: opacity 2s ease-in, transform 2s ease-out;
+}
+
+.fadeInLeft {
+  opacity: 0;
+  transform: translateX(-50px);
+  transition: opacity 1.5s ease-out, transform 1.5s ease-out;
+}
+
+.fadeInLeftSlow {
+  opacity: 0;
+  transform: translateX(-50px);
+  transition: opacity 2.5s ease-out, transform 2.5s ease-out;
+}
+
+.active {
+  opacity: 1;
+  transform: translateY(0);
+}
