@@ -1,18 +1,39 @@
-# Wedding Invitation App
+# Buna House Event Platform
 
-A customizable wedding invitation web app built with Next.js, TypeScript, Tailwind CSS, and MongoDB.
+An admin-managed event website for a coffee house opening, built with Next.js, Tailwind CSS, and Supabase.
 
 ## Overview
 
-This project is a single-page wedding invitation experience with:
+This project turns the old invitation flow into a live event platform with:
 
-- animated opening screen
-- personalized guest route support
-- countdown section
-- couple story and event timeline
-- RSVP form with database storage
-- wishes list with pagination
-- mobile-friendly invitation layout
+- a public landing page for the opening event
+- personalized guest pages with unique invite links
+- a protected admin dashboard at `/ad`
+- invite tracking for link opens and RSVP responses
+- editable event copy, map links, music, social links, and media slots
+- Supabase-backed storage for settings, invites, wishes, and uploaded assets
+
+## Main Routes
+
+- `/` public event page
+- `/[slug]` personalized invite page
+- `/ad` admin dashboard protected by a 4-digit PIN
+
+## Admin Features
+
+- event settings editor
+- guest invite creation with unique links
+- per-invite guest allowance
+- open tracking and RSVP analytics
+- media upload, preview, replacement, and reset
+- editable Google Maps link and embedded map URL
+- editable Instagram, Facebook, TikTok, WhatsApp, and Telegram links
+
+Default admin PIN:
+
+```text
+2580
+```
 
 ## Tech Stack
 
@@ -20,148 +41,128 @@ This project is a single-page wedding invitation experience with:
 - React 18
 - TypeScript
 - Tailwind CSS
-- MongoDB
-- Mongoose
+- Supabase Postgres
+- Supabase Storage
 
 ## Project Structure
 
 ```text
 app/
+  ad/page.tsx
   [slug]/page.tsx
   api/
+    admin/
     get/route.ts
+    invitation/[slug]/
     submit/route.ts
   components/
-    Countdown.tsx
-    Form.tsx
-    MainContent.tsx
-    ScreenStart.tsx
-    WishesList.tsx
+    AdminDashboard.tsx
+    EventExperience.tsx
 lib/
-  config.ts
+  admin-auth.ts
   db.ts
-  models/
+  defaults.ts
+  event-data.ts
+  types.ts
 public/
+supabase_schema.sql
 ```
 
-## Features
+## Supabase Setup
 
-- configurable couple and event details through environment variables
-- optional holy matrimony, reception, livestream, and prewedding sections
-- personalized invitation link support through the dynamic route
-- RSVP submission API backed by MongoDB
-- wishes listing API with server-side pagination
-- background music and image-driven invitation slides
+Create these environment variables before running locally or deploying:
 
-## Local Setup
+```env
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_URL=
+SUPABASE_SERVICE_ROLE_KEY=
+ADMIN_PIN=2580
+ADMIN_SESSION_SECRET=
+```
 
-1. Install dependencies:
+Apply the database and storage schema from:
+
+```text
+/Users/munir/Documents/invetation/supabase_schema.sql
+```
+
+The schema creates:
+
+- `event_settings`
+- `invites`
+- `wishes`
+- `media_assets`
+- storage buckets:
+  - `event-images`
+  - `event-audio`
+
+## Local Development
+
+Install dependencies:
 
 ```bash
 npm install
 ```
 
-2. Create a `.env.local` file and add your event and database values.
-
-Suggested variables:
-
-```env
-MONGODB_URI=
-NEXT_PUBLIC_COUPLE_NAMES=
-NEXT_PUBLIC_EVENT_DATE=
-NEXT_PUBLIC_GROOM_NAME=
-NEXT_PUBLIC_GROOM_NICKNAME=
-NEXT_PUBLIC_GROOM_INSTAGRAM=
-NEXT_PUBLIC_GROOM_BIO=
-NEXT_PUBLIC_BRIDE_NAME=
-NEXT_PUBLIC_BRIDE_NICKNAME=
-NEXT_PUBLIC_BRIDE_INSTAGRAM=
-NEXT_PUBLIC_BRIDE_BIO=
-NEXT_PUBLIC_BIBLE_VERSE=
-NEXT_PUBLIC_BIBLE_VERSE_CONTENT=
-NEXT_PUBLIC_YEAR_1=
-NEXT_PUBLIC_YEAR_1_CONTENT=
-NEXT_PUBLIC_YEAR_2=
-NEXT_PUBLIC_YEAR_2_CONTENT=
-NEXT_PUBLIC_YEAR_3=
-NEXT_PUBLIC_YEAR_3_CONTENT=
-NEXT_PUBLIC_HOLY_MATRIMONY=
-NEXT_PUBLIC_HOLY_MATRIMONY_TIME=
-NEXT_PUBLIC_HOLY_MATRIMONY_PLACE=
-NEXT_PUBLIC_HOLY_MATRIMONY_PLACE_DETAILS=
-NEXT_PUBLIC_HOLY_MATRIMONY_GOOGLE_MAPS=
-NEXT_PUBLIC_WEDDING_RECEPTION=
-NEXT_PUBLIC_WEDDING_RECEPTION_TIME=
-NEXT_PUBLIC_WEDDING_RECEPTION_PLACE=
-NEXT_PUBLIC_WEDDING_RECEPTION_PLACE_DETAILS=
-NEXT_PUBLIC_WEDDING_RECEPTION_GOOGLE_MAPS=
-NEXT_PUBLIC_LIVE_STREAMING=
-NEXT_PUBLIC_LIVE_STREAMING_TIME=
-NEXT_PUBLIC_LIVE_STREAMING_LINK=
-NEXT_PUBLIC_LIVE_STREAMING_DETAIL=
-NEXT_PUBLIC_PREWEDDING=
-NEXT_PUBLIC_PREWEDDING_CODE_LINK_EMBED=
-NEXT_PUBLIC_PREWEDDING_DETAIL=
-NEXT_PUBLIC_RSVP=
-NEXT_PUBLIC_RSVP_DETAIL=
-NEXT_PUBLIC_THANKYOU=
-NEXT_PUBLIC_THANKYOU_DETAIL=
-```
-
-3. Start the development server:
+Run the app:
 
 ```bash
 npm run dev
 ```
 
-4. Open:
+Open:
 
 ```text
 http://localhost:3000
 ```
 
-## Personalized Guest Links
-
-The app supports guest-specific invitation routes through the dynamic page:
+Admin:
 
 ```text
-/to:Guest%20Name
+http://localhost:3000/ad
 ```
 
-Example:
+## Deployment Notes
 
-```text
-http://localhost:3000/to:Abel%20Kebede
-```
+For Cloudflare Pages:
 
-## Database Notes
+- Production branch: `main`
+- Framework preset: `Next.js`
+- Build command: `npm install && npm run build`
 
-- RSVP submissions are stored through `app/api/submit/route.ts`
-- guest wishes are read from `app/api/get/route.ts`
-- MongoDB connection logic lives in `lib/db.ts`
+Make sure all Supabase environment variables are configured in the deployment settings.
 
-## Customization
+## Content Model
 
-You can customize:
+The public site is fully editable from the admin dashboard:
 
-- couple names
-- event date
-- bride and groom bios
-- timeline content
-- ceremony and reception details
-- livestream details
-- prewedding video embed
-- thank-you message
-- public images and music assets
+- event name and hero copy
+- story/about section
+- date and time
+- venue and map links
+- RSVP messaging
+- footer note
+- music
+- image slots
+- social links
 
-## Media Assets
+## Invite Flow
 
-Update assets in `public/` to match your event branding:
+Each guest gets a unique slug-based link. When they open it:
 
-- `slide_1.jpg` to `slide_9.jpg`
-- `foto_1.jpg` to `foto_4.jpg`
-- `foto_1_samping.jpg`
-- `music/wedding_song.mp3`
+- their name appears in the hero section
+- the invite is marked as opened
+- they can confirm attendance
+- they can choose how many guests they are bringing, up to the admin-set limit
+- the admin dashboard updates with response and guest totals
+
+## Media Behavior
+
+- images and audio are managed by named slots
+- replacing an asset updates the active public URL
+- clearing a slot resets it to the default fallback asset
+- old uploaded files remain in storage unless manually cleaned later
 
 ## Scripts
 
@@ -171,69 +172,3 @@ npm run build
 npm run start
 npm run lint
 ```
-
-## Deployment
-
-This app can be deployed on any Next.js-compatible platform after setting the required environment variables and MongoDB connection string.
-
-## Cloudflare Pages Setup
-
-If you connect this repository from the Cloudflare Pages screen shown in your screenshot, use these values:
-
-- Production branch: `main`
-- Framework preset: `Next.js`
-- Build command: `npm install && npm run build`
-- Build output directory: `.next`
-- Root directory: leave empty unless you move the project into a subfolder
-
-### Environment Variables
-
-Add these in Cloudflare Pages before deploying:
-
-```env
-MONGODB_URI=
-NEXT_PUBLIC_COUPLE_NAMES=
-NEXT_PUBLIC_EVENT_DATE=
-NEXT_PUBLIC_GROOM_NAME=
-NEXT_PUBLIC_GROOM_NICKNAME=
-NEXT_PUBLIC_GROOM_INSTAGRAM=
-NEXT_PUBLIC_GROOM_BIO=
-NEXT_PUBLIC_BRIDE_NAME=
-NEXT_PUBLIC_BRIDE_NICKNAME=
-NEXT_PUBLIC_BRIDE_INSTAGRAM=
-NEXT_PUBLIC_BRIDE_BIO=
-NEXT_PUBLIC_BIBLE_VERSE=
-NEXT_PUBLIC_BIBLE_VERSE_CONTENT=
-NEXT_PUBLIC_YEAR_1=
-NEXT_PUBLIC_YEAR_1_CONTENT=
-NEXT_PUBLIC_YEAR_2=
-NEXT_PUBLIC_YEAR_2_CONTENT=
-NEXT_PUBLIC_YEAR_3=
-NEXT_PUBLIC_YEAR_3_CONTENT=
-NEXT_PUBLIC_HOLY_MATRIMONY=
-NEXT_PUBLIC_HOLY_MATRIMONY_TIME=
-NEXT_PUBLIC_HOLY_MATRIMONY_PLACE=
-NEXT_PUBLIC_HOLY_MATRIMONY_PLACE_DETAILS=
-NEXT_PUBLIC_HOLY_MATRIMONY_GOOGLE_MAPS=
-NEXT_PUBLIC_WEDDING_RECEPTION=
-NEXT_PUBLIC_WEDDING_RECEPTION_TIME=
-NEXT_PUBLIC_WEDDING_RECEPTION_PLACE=
-NEXT_PUBLIC_WEDDING_RECEPTION_PLACE_DETAILS=
-NEXT_PUBLIC_WEDDING_RECEPTION_GOOGLE_MAPS=
-NEXT_PUBLIC_LIVE_STREAMING=
-NEXT_PUBLIC_LIVE_STREAMING_TIME=
-NEXT_PUBLIC_LIVE_STREAMING_LINK=
-NEXT_PUBLIC_LIVE_STREAMING_DETAIL=
-NEXT_PUBLIC_PREWEDDING=
-NEXT_PUBLIC_PREWEDDING_CODE_LINK_EMBED=
-NEXT_PUBLIC_PREWEDDING_DETAIL=
-NEXT_PUBLIC_RSVP=
-NEXT_PUBLIC_RSVP_DETAIL=
-NEXT_PUBLIC_THANKYOU=
-NEXT_PUBLIC_THANKYOU_DETAIL=
-```
-
-### Important Note
-
-This repository is currently a standard Next.js application using MongoDB and API routes.
-If Cloudflare Pages gives you build or runtime limitations for server-side routes, the next step would be converting it to a Cloudflare Worker/OpenNext setup.

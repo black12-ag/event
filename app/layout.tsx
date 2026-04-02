@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
-import { Ovo } from "@next/font/google";
+import { Ovo } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
-import { config } from "@/lib/config";
 
 const legan = localFont({
   src: "./fonts/Legan.woff",
@@ -30,8 +29,8 @@ const ovo = Ovo({
 
 
 export const metadata: Metadata = {
-  title: `The Wedding of ${config.coupleNames}`,
-  description: `Wedding invitation website for ${config.coupleNames}.`,
+  title: "Buna House Opening Event",
+  description: "Admin-managed coffee house opening event website.",
 };
 
 export default function RootLayout({
@@ -42,7 +41,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`bg-[#0a0a0a]  ${ovo.variable} ${thesignature.variable} ${wonder.variable} ${legan.variable}  antialiased`}
+        className={`bg-[#0a0a0a] ${ovo.variable} ${thesignature.variable} ${wonder.variable} ${legan.variable} antialiased`}
       >
         {children}
       </body>

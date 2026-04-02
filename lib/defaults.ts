@@ -1,0 +1,112 @@
+import { EventSettings, MediaAsset } from "./types";
+
+export const defaultEventSettings: EventSettings = {
+  eventName: "Buna House Grand Opening",
+  subtitle: "A new coffee experience in Addis Ababa",
+  heroTitle: "You Are Invited To Our Opening Celebration",
+  heroDescription:
+    "Join us for an evening of Ethiopian coffee, community, music, and a warm welcome as we open the doors to Buna House.",
+  openingNote:
+    "We would be honored to celebrate this special beginning with you.",
+  eventDate: "2026-05-10T16:00:00",
+  venueName: "Buna House Coffee Lounge",
+  venueAddress: "Bole, Addis Ababa, Ethiopia",
+  mapLink: "https://maps.google.com/?q=Bole%2C%20Addis%20Ababa%2C%20Ethiopia",
+  mapEmbedUrl: "",
+  musicUrl: "/music/wedding_song.mp3",
+  autoplayMusic: false,
+  storyTitle: "About The Opening",
+  storyBody:
+    "Buna House is created as a welcoming space for coffee lovers, friends, and families to gather, connect, and enjoy the richness of Ethiopian coffee culture in a modern setting.",
+  scheduleTitle: "Event Highlights",
+  scheduleDescription:
+    "Coffee tasting, live music, opening remarks, and a guided look through the space.",
+  rsvpTitle: "RSVP",
+  rsvpDescription:
+    "Please confirm your attendance and let us know how many guests you will bring.",
+  wishesTitle: "Messages From Guests",
+  footerNote:
+    "Thank you for supporting this new beginning. We look forward to welcoming you.",
+  primaryButtonLabel: "Open Invitation",
+  directionsButtonLabel: "Get Directions",
+  instagramUrl: "https://instagram.com/bunahouseaddis",
+  facebookUrl: "https://facebook.com/bunahouseaddis",
+  tiktokUrl: "https://tiktok.com/@bunahouseaddis",
+  whatsappUrl: "https://wa.me/251900000000",
+  telegramUrl: "https://t.me/bunahouseaddis",
+};
+
+export const defaultMediaAssets: MediaAsset[] = [
+  {
+    slotKey: "hero-background",
+    type: "image",
+    label: "Hero Background",
+    publicUrl: "/foto_2.jpg",
+    storagePath: null,
+    sortOrder: 1,
+    active: true,
+  },
+  {
+    slotKey: "hero-side",
+    type: "image",
+    label: "Hero Side Image",
+    publicUrl: "/foto_1_samping.jpg",
+    storagePath: null,
+    sortOrder: 2,
+    active: true,
+  },
+  {
+    slotKey: "story-image",
+    type: "image",
+    label: "Story Section Image",
+    publicUrl: "/slide_4.jpg",
+    storagePath: null,
+    sortOrder: 3,
+    active: true,
+  },
+  {
+    slotKey: "gallery-1",
+    type: "image",
+    label: "Gallery Image 1",
+    publicUrl: "/foto_1.jpg",
+    storagePath: null,
+    sortOrder: 4,
+    active: true,
+  },
+  {
+    slotKey: "gallery-2",
+    type: "image",
+    label: "Gallery Image 2",
+    publicUrl: "/foto_3.jpg",
+    storagePath: null,
+    sortOrder: 5,
+    active: true,
+  },
+  {
+    slotKey: "gallery-3",
+    type: "image",
+    label: "Gallery Image 3",
+    publicUrl: "/slide_7.jpg",
+    storagePath: null,
+    sortOrder: 6,
+    active: true,
+  },
+  {
+    slotKey: "gallery-4",
+    type: "image",
+    label: "Gallery Image 4",
+    publicUrl: "/slide_9.jpg",
+    storagePath: null,
+    sortOrder: 7,
+    active: true,
+  },
+  {
+    slotKey: "background-music",
+    type: "audio",
+    label: "Background Music",
+    publicUrl: "/music/wedding_song.mp3",
+    storagePath: null,
+    sortOrder: 8,
+    active: true,
+  },
+];

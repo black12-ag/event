@@ -1,24 +1,14 @@
-"use client";
+import EventExperience from "./components/EventExperience";
+import { getEventSettings, getMediaAssets, listWishes } from "@/lib/event-data";
 
-import { useEffect, useState } from "react";
-import ScreenStart from "./components/ScreenStart";
-import MainContent from "./components/MainContent";
+export const dynamic = "force-dynamic";
 
-export default function Home() {
-  const [showContent, setShowContent] = useState(false);
+export default async function Home() {
+  const [settings, media, wishesData] = await Promise.all([
+    getEventSettings(),
+    getMediaAssets(),
+    listWishes(1, 6),
+  ]);
 
-  useEffect(() => {
-    const contentTimer = setTimeout(() => {
-      setShowContent(true);
-    }, 7000);
-
-    return () => clearTimeout(contentTimer);
-  }, []);
-
-  return (
-    <div className="h-screen">
-      <ScreenStart />
-      {showContent && <MainContent />}
-    </div>
-  );
+  return <EventExperience invite={null} settings={settings} media={media} initialWishes={wishesData.wishes} />;
 }

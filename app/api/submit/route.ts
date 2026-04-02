@@ -1,27 +1,20 @@
 import { NextResponse } from "next/server";
-import { getSupabase } from "@/lib/db";
+import { submitGeneralWish } from "@/lib/event-data";
+
+export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
   try {
     const { name, attendance, guests, message } = await req.json();
-    const supabase = getSupabase();
-    
-    const { error } = await supabase
-      .from('wishes')
-      .insert([
-        { name, attendance, guests, message }
-      ]);
 
-    if (error) throw error;
+    if (!name || !message) {
+      return NextResponse.json({ message: "Name and message are required." }, { status: 400 });
+    }
 
-    return NextResponse.json(
-      {
-        message: "RSVP submitted successfully",
-      },
-      { status: 201 }
-    );
+    await submitGeneralWish(name, message, attendance || "attending", Number(guests || 1));
+    return NextResponse.json({ success: true });
   } catch (error) {
     console.error(error);
-    return new NextResponse("Failed to submit RSVP", { status: 500 });
+    return NextResponse.json({ message: "Unable to submit message." }, { status: 500 });
   }
 }

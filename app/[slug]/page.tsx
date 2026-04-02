@@ -1,37 +1,24 @@
-"use client";
+import { notFound } from "next/navigation";
+import EventExperience from "../components/EventExperience";
+import { getEventSettings, getInviteBySlug, getMediaAssets, listWishes } from "@/lib/event-data";
 
-import { useEffect, useState } from "react";
-import ScreenStart from "../components/ScreenStart";
-import MainContent from "../components/MainContent";
+export const dynamic = "force-dynamic";
 
-type ParamsProps = {
+type SlugPageProps = {
   params: { slug: string };
 };
 
-export default function Home({ params: { slug } }: ParamsProps) {
-  const [showContent, setShowContent] = useState(false);
-  const [name, setName] = useState<string>("");
+export default async function SlugPage({ params }: SlugPageProps) {
+  const [settings, media, wishesData, invite] = await Promise.all([
+    getEventSettings(),
+    getMediaAssets(),
+    listWishes(1, 6),
+    getInviteBySlug(params.slug),
+  ]);
 
-  useEffect(() => {
-    if (slug.startsWith("to%3A")) {
-      const extractedName = decodeURIComponent(slug.slice(5)).replace(
-        /%20/g,
-        " "
-      );
-      setName(extractedName);
-    }
+  if (!invite) {
+    notFound();
+  }
 
-    const contentTimer = setTimeout(() => {
-      setShowContent(true);
-    }, 7000);
-
-    return () => clearTimeout(contentTimer);
-  }, [slug]);
-
-  return (
-    <div className="h-screen">
-      <ScreenStart />
-      {showContent && <MainContent name={name} />}
-    </div>
-  );
+  return <EventExperience invite={invite} settings={settings} media={media} initialWishes={wishesData.wishes} />;
 }
