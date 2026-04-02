@@ -37,6 +37,7 @@ create table if not exists public.invites (
   id uuid primary key default gen_random_uuid(),
   guest_name text not null,
   slug text not null unique,
+  is_generic boolean not null default false,
   allowed_guests integer not null default 1 check (allowed_guests >= 1),
   attendance_status text not null default 'pending'
     check (attendance_status in ('pending', 'attending', 'not_attending')),
@@ -73,8 +74,11 @@ create table if not exists public.media_assets (
   updated_at timestamptz not null default now()
 );
 
+alter table public.invites add column if not exists is_generic boolean not null default false;
+
 create index if not exists invites_slug_idx on public.invites(slug);
 create index if not exists invites_created_at_idx on public.invites(created_at desc);
+create index if not exists invites_is_generic_idx on public.invites(is_generic);
 create index if not exists wishes_created_at_idx on public.wishes(created_at desc);
 create index if not exists media_assets_slot_key_idx on public.media_assets(slot_key);
 

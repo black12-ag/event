@@ -19,8 +19,13 @@ export async function POST(req: Request) {
   }
 
   try {
-    const { guestName, allowedGuests, notes } = await req.json();
-    const invite = await createInvite(guestName, Number(allowedGuests || 1), notes || "");
+    const { guestName, allowedGuests, notes, inviteType } = await req.json();
+    const invite = await createInvite(
+      guestName || "",
+      Number(allowedGuests || 1),
+      notes || "",
+      inviteType === "open" ? "open" : "named"
+    );
     return NextResponse.json({ invite });
   } catch (error) {
     console.error(error);

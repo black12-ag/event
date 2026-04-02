@@ -87,8 +87,9 @@ const toCamelMedia = (item: any): MediaAsset => ({
 
 const toCamelInvite = (item: any): Invite => ({
   id: item.id,
-  guestName: item.guest_name,
+  guestName: item.guest_name ?? "",
   slug: item.slug,
+  inviteType: item.is_generic ? "open" : "named",
   allowedGuests: item.allowed_guests ?? 1,
   attendanceStatus: item.attendance_status ?? "pending",
   bringingCount: item.bringing_count ?? 0,
@@ -319,11 +320,19 @@ export const getInviteSummary = async (): Promise<InviteSummary> => {
   };
 };
 
-export const createInvite = async (guestName: string, allowedGuests: number, notes: string) => {
+export const createInvite = async (
+  guestName: string,
+  allowedGuests: number,
+  notes: string,
+  inviteType: "named" | "open" = "named"
+) => {
   const supabase = getSupabaseAdmin();
+  const normalizedName =
+    inviteType === "open" ? "" : guestName.trim();
   const payload = {
-    guest_name: guestName,
-    slug: getSlug(guestName),
+    guest_name: normalizedName,
+    slug: getSlug(normalizedName || "open-invite"),
+    is_generic: inviteType === "open",
     allowed_guests: Math.max(1, allowedGuests),
     attendance_status: "pending",
     bringing_count: 0,
@@ -347,6 +356,7 @@ export const updateInvite = async (id: string, updates: Partial<Invite>) => {
   };
 
   if (updates.guestName !== undefined) payload.guest_name = updates.guestName;
+  if (updates.inviteType !== undefined) payload.is_generic = updates.inviteType === "open";
   if (updates.allowedGuests !== undefined) payload.allowed_guests = updates.allowedGuests;
   if (updates.notes !== undefined) payload.notes = updates.notes;
   if (updates.attendanceStatus !== undefined) payload.attendance_status = updates.attendanceStatus;

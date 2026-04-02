@@ -54,6 +54,7 @@ export default function EventExperience({
   const [wishes, setWishes] = useState<Wish[]>(initialWishes);
   const [wishStatus, setWishStatus] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [attendance, setAttendance] = useState("attending");
 
   const heroBackground = getAssetUrl(media, "hero-background", "/foto_2.jpg");
   const heroSide = getAssetUrl(media, "hero-side", "/foto_1_samping.jpg");
@@ -157,6 +158,12 @@ export default function EventExperience({
     form.reset();
   };
 
+  const isOpenInvite = invite?.inviteType === "open";
+  const displayedGuestName =
+    invite && invite.inviteType === "named" && invite.guestName
+      ? invite.guestName
+      : "Honored Guest";
+
   return (
     <div className="min-h-screen bg-[#120f0c] text-white">
       <audio id="event-audio" src={musicUrl} preload="auto" />
@@ -187,7 +194,7 @@ export default function EventExperience({
                   Invited Guest
                 </p>
                 <p className="font-ovo text-2xl">
-                  {invite?.guestName || "Honored Guest"}
+                  {displayedGuestName}
                 </p>
               </div>
               <button
@@ -291,11 +298,15 @@ export default function EventExperience({
                     Guest Greeting
                   </p>
                   <p className="mt-3 font-ovo text-3xl">
-                    {invite ? `Welcome, ${invite.guestName}` : "Welcome to Buna House"}
+                    {invite && invite.inviteType === "named" && invite.guestName
+                      ? `Welcome, ${invite.guestName}`
+                      : "Welcome to Buna House"}
                   </p>
                   <p className="mt-3 text-sm leading-7 text-white/68">
                     {invite
-                      ? `Your private invitation allows up to ${invite.allowedGuests} guest${invite.allowedGuests > 1 ? "s" : ""}.`
+                      ? invite.inviteType === "open"
+                        ? `This shareable invitation allows up to ${invite.allowedGuests} guest${invite.allowedGuests > 1 ? "s" : ""}. Please enter your name below before sending your reply.`
+                        : `Your private invitation allows up to ${invite.allowedGuests} guest${invite.allowedGuests > 1 ? "s" : ""}.`
                       : "Explore the event details, leave a message, and join us for the opening celebration."}
                   </p>
                 </div>
@@ -367,21 +378,25 @@ export default function EventExperience({
                   {settings.rsvpTitle}
                 </p>
                 <h3 className="mt-4 font-ovo text-4xl">
-                  {invite ? `Confirm Your Attendance, ${invite.guestName}` : "Leave Your Response"}
+                  {invite && invite.inviteType === "named" && invite.guestName
+                    ? `Confirm Your Attendance, ${invite.guestName}`
+                    : "Leave Your Response"}
                 </h3>
                 <p className="mt-4 text-sm leading-7 text-white/68">{settings.rsvpDescription}</p>
 
                 <form className="mt-8 space-y-4" onSubmit={handleWishFormSubmit}>
                   <input
                     name="name"
-                    defaultValue={invite?.guestName || ""}
-                    placeholder="Your name"
+                    defaultValue={invite && invite.inviteType === "named" ? invite.guestName : ""}
+                    placeholder={isOpenInvite ? "Your name" : "Your name"}
                     className="w-full rounded-2xl border border-white/10 bg-[#0e0b09] px-4 py-3 text-sm text-white outline-none"
                     required
+                    readOnly={Boolean(invite && invite.inviteType === "named" && invite.guestName)}
                   />
                   <select
                     name="attendance"
                     defaultValue="attending"
+                    onChange={(event) => setAttendance(event.target.value)}
                     className="w-full rounded-2xl border border-white/10 bg-[#0e0b09] px-4 py-3 text-sm text-white outline-none"
                   >
                     <option value="attending">Attending</option>
@@ -391,6 +406,7 @@ export default function EventExperience({
                     name="guests"
                     defaultValue={invite ? String(Math.max(1, invite.allowedGuests)) : "1"}
                     className="w-full rounded-2xl border border-white/10 bg-[#0e0b09] px-4 py-3 text-sm text-white outline-none"
+                    disabled={attendance === "not_attending"}
                   >
                     {Array.from({ length: invite?.allowedGuests || 4 }, (_, index) => index + 1).map((count) => (
                       <option key={count} value={count}>
@@ -398,6 +414,11 @@ export default function EventExperience({
                       </option>
                     ))}
                   </select>
+                  {invite ? (
+                    <p className="text-xs leading-6 text-white/45">
+                      Maximum allowed guests for this link: {invite.allowedGuests}
+                    </p>
+                  ) : null}
                   <textarea
                     name="message"
                     placeholder="Write your wishes or note for the event"

@@ -44,6 +44,7 @@ export type Invite = {
   id: string;
   guestName: string;
   slug: string;
+  inviteType: "named" | "open";
   allowedGuests: number;
   attendanceStatus: "pending" | "attending" | "not_attending";
   bringingCount: number;

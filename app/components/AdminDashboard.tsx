@@ -99,7 +99,12 @@ export default function AdminDashboard({
   const [saving, setSaving] = useState(false);
   const [mediaBusyKey, setMediaBusyKey] = useState("");
   const [mediaMessage, setMediaMessage] = useState("");
-  const [newInvite, setNewInvite] = useState({ guestName: "", allowedGuests: 1, notes: "" });
+  const [newInvite, setNewInvite] = useState({
+    guestName: "",
+    allowedGuests: 1,
+    notes: "",
+    inviteType: "named" as "named" | "open",
+  });
 
   const loadDashboard = async () => {
     setLoading(true);
@@ -216,7 +221,7 @@ export default function AdminDashboard({
       body: JSON.stringify(newInvite),
     });
     if (response.ok) {
-      setNewInvite({ guestName: "", allowedGuests: 1, notes: "" });
+      setNewInvite({ guestName: "", allowedGuests: 1, notes: "", inviteType: "named" });
       loadDashboard();
     }
   };
@@ -239,6 +244,29 @@ export default function AdminDashboard({
     () => [...media].sort((a, b) => a.sortOrder - b.sortOrder),
     [media]
   );
+
+  const buildShareText = (invite: Invite) =>
+    invite.inviteType === "open"
+      ? `You are invited to ${settings.eventName}. Open your invitation here:`
+      : `${invite.guestName}, you are invited to ${settings.eventName}. Open your invitation here:`;
+
+  const shareInvite = async (invite: Invite) => {
+    const inviteLink = `${window.location.origin}/${invite.slug}`;
+    const text = `${buildShareText(invite)} ${inviteLink}`;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: settings.eventName,
+          text: buildShareText(invite),
+          url: inviteLink,
+        });
+        return;
+      } catch {
+        // Fall through to clipboard if the user cancels or sharing is unavailable.
+      }
+    }
+    await navigator.clipboard.writeText(text);
+  };
 
   if (!authenticated) {
     return (
@@ -605,13 +633,34 @@ export default function AdminDashboard({
                 invite link will track opens and RSVP replies.
               </p>
               <form className="mt-6 space-y-4" onSubmit={handleInviteCreate}>
-                <input
-                  value={newInvite.guestName}
-                  onChange={(event) => setNewInvite((current) => ({ ...current, guestName: event.target.value }))}
-                  placeholder="Guest name"
-                  className="w-full rounded-2xl border border-white/10 bg-[#0c0907] px-4 py-3 text-white outline-none"
-                  required
-                />
+                <div className="grid gap-3 md:grid-cols-2">
+                  <label className="grid gap-2 text-sm text-white/75">
+                    Invite Type
+                    <select
+                      value={newInvite.inviteType}
+                      onChange={(event) =>
+                        setNewInvite((current) => ({
+                          ...current,
+                          inviteType: event.target.value === "open" ? "open" : "named",
+                        }))
+                      }
+                      className="w-full rounded-2xl border border-white/10 bg-[#0c0907] px-4 py-3 text-white outline-none"
+                    >
+                      <option value="named">Named invite</option>
+                      <option value="open">Open share link</option>
+                    </select>
+                  </label>
+                  <label className="grid gap-2 text-sm text-white/75">
+                    Guest Name
+                    <input
+                      value={newInvite.guestName}
+                      onChange={(event) => setNewInvite((current) => ({ ...current, guestName: event.target.value }))}
+                      placeholder={newInvite.inviteType === "open" ? "Optional label for admin only" : "Guest name"}
+                      className="w-full rounded-2xl border border-white/10 bg-[#0c0907] px-4 py-3 text-white outline-none"
+                      required={newInvite.inviteType === "named"}
+                    />
+                  </label>
+                </div>
                 <input
                   type="number"
                   min={1}
@@ -622,6 +671,11 @@ export default function AdminDashboard({
                   }
                   className="w-full rounded-2xl border border-white/10 bg-[#0c0907] px-4 py-3 text-white outline-none"
                 />
+                <p className="text-xs leading-6 text-white/42">
+                  {newInvite.inviteType === "open"
+                    ? "Create one generic link that can be shared freely. The public page will not show a fixed guest name."
+                    : "Create a personalized link that shows the guest name on the public page."}
+                </p>
                 <textarea
                   value={newInvite.notes}
                   onChange={(event) => setNewInvite((current) => ({ ...current, notes: event.target.value }))}
@@ -722,8 +776,25 @@ export default function AdminDashboard({
                             )
                           )
                         }
+                        placeholder={invite.inviteType === "open" ? "Optional admin label" : "Guest name"}
                         className="rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none"
                       />
+                      <select
+                        value={invite.inviteType}
+                        onChange={(event) =>
+                          setInvites((current) =>
+                            current.map((item) =>
+                              item.id === invite.id
+                                ? { ...item, inviteType: event.target.value === "open" ? "open" : "named" }
+                                : item
+                            )
+                          )
+                        }
+                        className="rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none"
+                      >
+                        <option value="named">Named invite</option>
+                        <option value="open">Open share link</option>
+                      </select>
                       <input
                         type="number"
                         min={1}
@@ -759,6 +830,7 @@ export default function AdminDashboard({
                       />
                     </div>
                     <div className="rounded-[1.5rem] border border-white/8 bg-white/5 p-4 text-sm text-white/72">
+                      <p>Type: <span className="text-white">{invite.inviteType === "open" ? "Open share link" : "Named invite"}</span></p>
                       <p>Opened: <span className="text-white">{invite.openedAt ? "Yes" : "No"}</span></p>
                       <p className="mt-2">Response: <span className="text-white">{invite.attendanceStatus}</span></p>
                       <p className="mt-2">Bringing: <span className="text-white">{invite.bringingCount}</span></p>
@@ -776,6 +848,29 @@ export default function AdminDashboard({
                     >
                       Copy Link
                     </button>
+                    <button
+                      type="button"
+                      onClick={() => shareInvite(invite)}
+                      className="rounded-full border border-white/10 px-5 py-2 text-xs uppercase tracking-[0.25em]"
+                    >
+                      Share
+                    </button>
+                    <a
+                      href={`https://wa.me/?text=${encodeURIComponent(`${buildShareText(invite)} ${inviteLink}`)}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="rounded-full border border-white/10 px-5 py-2 text-xs uppercase tracking-[0.25em]"
+                    >
+                      WhatsApp
+                    </a>
+                    <a
+                      href={`https://t.me/share/url?url=${encodeURIComponent(inviteLink)}&text=${encodeURIComponent(buildShareText(invite))}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="rounded-full border border-white/10 px-5 py-2 text-xs uppercase tracking-[0.25em]"
+                    >
+                      Telegram
+                    </a>
                     <button
                       type="button"
                       onClick={() => handleInviteUpdate(invite)}
