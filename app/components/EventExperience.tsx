@@ -1,8 +1,10 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { FaFacebookF, FaInstagram, FaTelegramPlane, FaTiktok, FaWhatsapp } from "react-icons/fa";
+import { IoIosArrowUp } from "react-icons/io";
+import { useInView } from "react-intersection-observer";
 import { EventSettings, Invite, MediaAsset, Wish } from "@/lib/types";
 
 type EventExperienceProps = {
@@ -15,14 +17,13 @@ type EventExperienceProps = {
 const getAssetUrl = (media: MediaAsset[], slotKey: string, fallback = "") =>
   media.find((item) => item.slotKey === slotKey)?.publicUrl || fallback;
 
-const formatDate = (value: string) =>
+const formatDate = (value: string, options?: Intl.DateTimeFormatOptions) =>
   new Date(value).toLocaleString("en-US", {
     weekday: "long",
     year: "numeric",
     month: "long",
     day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
+    ...options,
   });
 
 const getTimeLeft = (value: string) => {
@@ -42,19 +43,66 @@ const getTimeLeft = (value: string) => {
   };
 };
 
+type SlideProps = {
+  backgroundImage: string;
+  children: React.ReactNode;
+  className?: string;
+};
+
+function Slide({ backgroundImage, children, className = "" }: SlideProps) {
+  return (
+    <section
+      className={`snap-start min-h-screen bg-cover bg-center bg-no-repeat text-white ${className}`}
+      style={{
+        backgroundImage: `linear-gradient(rgba(10, 8, 6, 0.38), rgba(10, 8, 6, 0.72)), url(${backgroundImage})`,
+      }}
+    >
+      {children}
+    </section>
+  );
+}
+
+function CountdownStrip({ eventDate }: { eventDate: string }) {
+  const [timeLeft, setTimeLeft] = useState(getTimeLeft(eventDate));
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setTimeLeft(getTimeLeft(eventDate));
+    }, 1000);
+    return () => window.clearInterval(timer);
+  }, [eventDate]);
+
+  return (
+    <div className="mt-5 flex space-x-4 text-center font-legan">
+      {[
+        ["Days", timeLeft.days],
+        ["Hours", timeLeft.hours],
+        ["Minutes", timeLeft.minutes],
+        ["Seconds", timeLeft.seconds],
+      ].map(([label, value]) => (
+        <div key={String(label)} className="flex flex-col">
+          <span className="text-4xl font-bold">{value}</span>
+          <span className="text-sm uppercase">{label}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function EventExperience({
   invite,
   settings,
   media,
   initialWishes,
 }: EventExperienceProps) {
+  const [fadeClass, setFadeClass] = useState("opacity-0");
   const [isOpen, setIsOpen] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(getTimeLeft(settings.eventDate));
   const [wishes, setWishes] = useState<Wish[]>(initialWishes);
   const [wishStatus, setWishStatus] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [attendance, setAttendance] = useState("attending");
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const heroBackground = getAssetUrl(media, "hero-background", "/foto_2.jpg");
   const heroSide = getAssetUrl(media, "hero-side", "/foto_1_samping.jpg");
@@ -68,38 +116,57 @@ export default function EventExperience({
     [media]
   );
 
+  const displayedGuestName =
+    invite && invite.inviteType === "named" && invite.guestName
+      ? invite.guestName
+      : "Honored Guest";
+
+  const inviteGreeting =
+    invite && invite.inviteType === "named" && invite.guestName
+      ? `Dear ${invite.guestName},`
+      : "Welcome,";
+
+  const { ref: slide1Ref, inView: slide1InView } = useInView({ threshold: 0.4 });
+  const { ref: slide2Ref, inView: slide2InView } = useInView({ threshold: 0.4 });
+  const { ref: slide3Ref, inView: slide3InView } = useInView({ threshold: 0.4 });
+  const { ref: slide4Ref, inView: slide4InView } = useInView({ threshold: 0.4 });
+  const { ref: slide5Ref, inView: slide5InView } = useInView({ threshold: 0.4 });
+  const { ref: slide6Ref, inView: slide6InView } = useInView({ threshold: 0.4 });
+  const { ref: slide7Ref, inView: slide7InView } = useInView({ threshold: 0.4 });
+  const { ref: slide8Ref, inView: slide8InView } = useInView({ threshold: 0.4 });
+  const { ref: slide9Ref, inView: slide9InView } = useInView({ threshold: 0.4 });
+
   useEffect(() => {
-    const timer = window.setInterval(() => {
-      setTimeLeft(getTimeLeft(settings.eventDate));
-    }, 1000);
-    return () => window.clearInterval(timer);
-  }, [settings.eventDate]);
+    const timer = setTimeout(() => setFadeClass("opacity-100"), 300);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     if (!invite) return;
     fetch(`/api/invitation/${invite.slug}/open`, { method: "POST" }).catch(() => null);
   }, [invite]);
 
-  useEffect(() => {
-    const audio = document.getElementById("event-audio") as HTMLAudioElement | null;
-    if (!audio) return;
-    if (isOpen && settings.autoplayMusic) {
-      audio.play().then(() => setIsPlaying(true)).catch(() => null);
+  const handleOpen = async () => {
+    setIsOpen(true);
+    if (audioRef.current) {
+      try {
+        await audioRef.current.play();
+        setIsPlaying(true);
+      } catch {
+        setIsPlaying(false);
+      }
     }
-  }, [isOpen, settings.autoplayMusic]);
+  };
 
   const toggleMusic = async () => {
-    const audio = document.getElementById("event-audio") as HTMLAudioElement | null;
-    if (!audio) return;
-
+    if (!audioRef.current) return;
     if (isPlaying) {
-      audio.pause();
+      audioRef.current.pause();
       setIsPlaying(false);
       return;
     }
-
     try {
-      await audio.play();
+      await audioRef.current.play();
       setIsPlaying(true);
     } catch {
       setIsPlaying(false);
@@ -114,8 +181,10 @@ export default function EventExperience({
       name: String(formData.get("name") || invite?.guestName || ""),
       message: String(formData.get("message") || ""),
       attendance: String(formData.get("attendance") || "attending"),
-      guests: Number(formData.get("guests") || 1),
-      inviteSlug: invite?.slug || "",
+      guests:
+        String(formData.get("attendance") || "attending") === "not_attending"
+          ? 0
+          : Number(formData.get("guests") || 1),
     };
 
     const endpoint = invite ? `/api/invitation/${invite.slug}/rsvp` : "/api/submit";
@@ -158,373 +227,360 @@ export default function EventExperience({
     form.reset();
   };
 
-  const isOpenInvite = invite?.inviteType === "open";
-  const displayedGuestName =
-    invite && invite.inviteType === "named" && invite.guestName
-      ? invite.guestName
-      : "Honored Guest";
-
   return (
-    <div className="min-h-screen bg-[#120f0c] text-white">
-      <audio id="event-audio" src={musicUrl} preload="auto" />
+    <div className={`h-screen w-screen flex flex-col md:flex-row ${fadeClass} transition-opacity duration-1000`}>
+      <div
+        className="hidden md:flex md:w-2/3 justify-center items-end pb-12"
+        style={{
+          backgroundImage: `url(${heroSide})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
+        <div className="font-ovo text-lg text-white tracking-[5px] uppercase">
+          {settings.eventName}
+        </div>
+      </div>
 
-      {!isOpen ? (
-        <section className="flex min-h-screen w-full flex-col md:flex-row">
-          <div
-            className="hidden md:flex md:w-2/3 items-end justify-center pb-12"
-            style={{
-              backgroundImage: `url(${heroSide})`,
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-            }}
-          >
-            <p className="font-ovo text-lg uppercase tracking-[5px] text-white">
-              {settings.eventName}
-            </p>
-          </div>
-
-          <div
-            className="relative flex min-h-screen w-full items-center justify-center overflow-hidden px-6 py-16 md:w-1/3"
-            style={{
-              backgroundImage: `linear-gradient(rgba(14, 10, 7, 0.62), rgba(14, 10, 7, 0.84)), url(${heroBackground})`,
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-            }}
-          >
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.08),transparent_40%)]" />
-            <div className="relative flex h-full w-full max-w-md flex-col justify-between py-16 text-center">
-              <div className="space-y-4">
-                <p className="font-legan text-sm uppercase tracking-[0.32em] text-white">
-                  {settings.subtitle}
-                </p>
-                <h1 className="font-ovo text-3xl uppercase tracking-[0.2em] text-white sm:text-4xl">
-                  {settings.eventName}
-                </h1>
-                <p className="font-legan text-sm uppercase tracking-[0.18em] text-white/90">
-                  {formatDate(settings.eventDate)}
-                </p>
-              </div>
-
-              <div>
-                <p className="text-lg uppercase tracking-[0.28em] text-white">
-                  {invite && invite.inviteType === "named" && invite.guestName
-                    ? `Dear ${invite.guestName},`
-                    : "Welcome,"}
-                </p>
-                <p className="mx-auto mt-5 max-w-sm text-sm leading-7 text-white/80">
-                  {settings.heroDescription}
-                </p>
+      <div className="md:w-1/3 h-full overflow-y-scroll snap-y snap-mandatory scroll-smooth bg-[#0f0b08]">
+        <section
+          className="snap-start w-full min-h-screen flex items-center justify-center"
+          style={{
+            backgroundImage: `linear-gradient(rgba(12, 9, 7, 0.48), rgba(12, 9, 7, 0.7)), url(${heroBackground})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          }}
+        >
+          <div className="text-center p-5 flex flex-col h-full justify-between py-20 w-full">
+            <div className="gap-y-2 md:gap-y-4 flex flex-col">
+              <h5 className="text-sm font-legan text-white uppercase tracking-wide">
+                {settings.subtitle}
+              </h5>
+              <h1 className="text-2xl md:text-3xl font-ovo text-white uppercase">
+                {settings.eventName}
+              </h1>
+              <h5 className="text-sm font-legan text-white uppercase tracking-wide">
+                {formatDate(settings.eventDate, { hour: undefined, minute: undefined })}
+              </h5>
+            </div>
+            <div>
+              <p className="mt-5 text-lg uppercase tracking-widest text-white">
+                {inviteGreeting}
+              </p>
+              <p className="mx-auto mt-5 max-w-sm text-sm font-legan text-white/90">
+                {settings.heroDescription}
+              </p>
+              {!isOpen ? (
                 <button
-                  type="button"
-                  onClick={() => setIsOpen(true)}
-                  className="mt-8 rounded-full border border-white bg-white px-6 py-2 text-xs uppercase tracking-[0.28em] text-black transition hover:bg-transparent hover:text-white"
+                  className="animate-bounce mt-5 px-5 py-1 uppercase text-xs border border-white hover:text-white hover:bg-transparent rounded-full bg-white text-black transition"
+                  onClick={handleOpen}
                 >
                   {settings.primaryButtonLabel}
                 </button>
-              </div>
+              ) : (
+                <IoIosArrowUp className="mx-auto mt-20 animate-upDown text-white text-3xl" />
+              )}
             </div>
           </div>
         </section>
-      ) : null}
 
-      {isOpen ? (
-        <main>
-          <section
-            className="relative overflow-hidden px-6 py-24"
-            style={{
-              backgroundImage: `linear-gradient(rgba(10, 7, 5, 0.8), rgba(10, 7, 5, 0.92)), url(${heroBackground})`,
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-            }}
-          >
-            <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[1.15fr_0.85fr]">
-              <div>
-                <p className="font-legan text-sm uppercase tracking-[0.35em] text-[#d5b37b]">
-                  Grand Opening Invitation
-                </p>
-                <h2 className="mt-4 font-ovo text-5xl leading-tight sm:text-6xl">
+        {isOpen && (
+          <>
+            <Slide backgroundImage={heroBackground} className="flex pt-12 p-5 px-12">
+              <div ref={slide1Ref} className={`fadeInMove ${slide1InView ? "active" : ""}`}>
+                <h1 className="text-xl md:text-2xl font-ovo tracking-wide text-white uppercase">
                   {settings.heroTitle}
-                </h2>
-                <p className="mt-6 max-w-2xl text-base leading-8 text-white/76">
-                  {settings.openingNote}
+                </h1>
+                <p className="text-sm mt-5 font-legan">{settings.openingNote}</p>
+                <p className="text-6xl mt-5 font-wonder">{settings.eventName}</p>
+              </div>
+            </Slide>
+
+            <Slide backgroundImage={storyImage} className="flex items-end pb-16 px-12">
+              <div ref={slide2Ref} className={`fadeInMove ${slide2InView ? "active" : ""}`}>
+                <p className="font-legan text-sm my-2 uppercase">Guest Invitation</p>
+                <h1 className="text-xl md:text-3xl text-white font-ovo">
+                  {displayedGuestName}
+                </h1>
+                <h3 className="font-thesignature text-2xl">
+                  {invite?.inviteType === "open" ? "Open Share Link" : "Personal Invite"}
+                </h3>
+                <p className="text-sm mt-5 font-legan text-[#CCCCCC]">
+                  {invite
+                    ? invite.inviteType === "open"
+                      ? `This shareable invitation allows up to ${invite.allowedGuests} guest${invite.allowedGuests > 1 ? "s" : ""}.`
+                      : `This private invitation allows up to ${invite.allowedGuests} guest${invite.allowedGuests > 1 ? "s" : ""}.`
+                    : "Explore the opening event details and join us for the celebration."}
                 </p>
-                <div className="mt-8 flex flex-wrap gap-4">
-                  <button
-                    type="button"
-                    onClick={toggleMusic}
-                    className="rounded-full border border-[#d5b37b]/50 px-5 py-3 text-xs uppercase tracking-[0.3em] text-[#f1d5a4]"
-                  >
-                    {isPlaying ? "Pause Music" : "Play Music"}
-                  </button>
-                  <Link
-                    href={settings.mapLink}
-                    target="_blank"
-                    className="rounded-full bg-[#d5b37b] px-5 py-3 text-xs font-semibold uppercase tracking-[0.3em] text-[#120f0c]"
-                  >
-                    {settings.directionsButtonLabel}
-                  </Link>
-                </div>
               </div>
+            </Slide>
 
-              <div className="rounded-[2rem] border border-white/10 bg-[#18120d]/80 p-6 backdrop-blur">
-                <div className="grid gap-6 sm:grid-cols-2">
-                  {[
-                    { label: "Days", value: timeLeft.days },
-                    { label: "Hours", value: timeLeft.hours },
-                    { label: "Minutes", value: timeLeft.minutes },
-                    { label: "Seconds", value: timeLeft.seconds },
-                  ].map((item) => (
-                    <div key={item.label} className="rounded-[1.5rem] border border-white/8 bg-white/5 p-5 text-center">
-                      <p className="font-ovo text-4xl text-[#f7e4bf]">{item.value}</p>
-                      <p className="mt-2 text-xs uppercase tracking-[0.24em] text-white/55">
-                        {item.label}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-6 border-t border-white/10 pt-6">
-                  <p className="text-sm uppercase tracking-[0.25em] text-white/50">Event Date</p>
-                  <p className="mt-2 font-ovo text-2xl">{formatDate(settings.eventDate)}</p>
-                  <p className="mt-5 text-sm uppercase tracking-[0.25em] text-white/50">Venue</p>
-                  <p className="mt-2 font-ovo text-2xl">{settings.venueName}</p>
-                  <p className="mt-2 text-sm leading-7 text-white/72">{settings.venueAddress}</p>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <section className="bg-[#17120e] px-6 py-20">
-            <div className="mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-[0.9fr_1.1fr]">
-              <div className="overflow-hidden rounded-[2rem] border border-white/10">
-                <img src={storyImage} alt={settings.storyTitle} className="h-full w-full object-cover" />
-              </div>
-              <div>
-                <p className="font-legan text-sm uppercase tracking-[0.35em] text-[#d5b37b]">
+            <Slide backgroundImage={gallery[0]} className="pt-8 px-12">
+              <div ref={slide3Ref}>
+                <h1 className={`text-xl md:text-5xl text-white font-ovo fadeInMove ${slide3InView ? "active" : ""}`}>
                   {settings.storyTitle}
+                </h1>
+                <p className={`text-sm mt-5 font-legan text-white fadeInLeftSlow ${slide3InView ? "active" : ""}`}>
+                  {settings.storyBody}
                 </p>
-                <p className="mt-5 text-lg leading-9 text-white/76">{settings.storyBody}</p>
-                <div className="mt-8 rounded-[1.5rem] border border-white/8 bg-white/5 p-6">
-                  <p className="font-legan text-xs uppercase tracking-[0.3em] text-white/45">
-                    Guest Greeting
-                  </p>
-                  <p className="mt-3 font-ovo text-3xl">
-                    {invite && invite.inviteType === "named" && invite.guestName
-                      ? `Welcome, ${invite.guestName}`
-                      : "Welcome to Buna House"}
-                  </p>
-                  <p className="mt-3 text-sm leading-7 text-white/68">
-                    {invite
-                      ? invite.inviteType === "open"
-                        ? `This shareable invitation allows up to ${invite.allowedGuests} guest${invite.allowedGuests > 1 ? "s" : ""}. Please enter your name below before sending your reply.`
-                        : `Your private invitation allows up to ${invite.allowedGuests} guest${invite.allowedGuests > 1 ? "s" : ""}.`
-                      : "Explore the event details, leave a message, and join us for the opening celebration."}
-                  </p>
+                <div className={`relative flex items-center mt-5 fadeInLeft ${slide3InView ? "active" : ""}`}>
+                  <hr className="w-[120px] mx-2 border-t border-gray-300" />
+                  <span className="px-2 font-thesignature text-3xl">
+                    {settings.eventName}
+                  </span>
                 </div>
               </div>
-            </div>
-          </section>
+            </Slide>
 
-          <section className="bg-[#120f0c] px-6 py-20">
-            <div className="mx-auto max-w-6xl">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-                <div>
-                  <p className="font-legan text-sm uppercase tracking-[0.35em] text-[#d5b37b]">
-                    {settings.scheduleTitle}
-                  </p>
-                  <h3 className="mt-3 font-ovo text-4xl">What To Expect</h3>
-                </div>
-                <p className="max-w-2xl text-sm leading-7 text-white/68">
+            <Slide backgroundImage={gallery[1]} className="flex flex-col items-center px-12">
+              <div ref={slide4Ref} className={`${slide4InView ? "active" : ""} fadeInMove flex items-center flex-col pt-32`}>
+                <h3 className="uppercase font-legan text-xs tracking-wide mt-5 mb-2">
+                  {settings.scheduleTitle}
+                </h3>
+                <h1 className="text-2xl w-[240px] text-center text-white font-ovo uppercase">
+                  {formatDate(settings.eventDate, { weekday: "long", hour: undefined, minute: undefined })}
+                </h1>
+                <p className="text-sm text-center font-legan text-white mt-5">
                   {settings.scheduleDescription}
                 </p>
-              </div>
-
-              <div className="mt-10 grid gap-5 lg:grid-cols-4">
-                {gallery.map((item, index) => (
-                  <div key={item} className="overflow-hidden rounded-[1.75rem] border border-white/10 bg-white/5">
-                    <img src={item} alt={`Event gallery ${index + 1}`} className="h-72 w-full object-cover" />
+                <div className="mt-5 mx-auto flex flex-col items-center">
+                  <h3 className="uppercase font-ovo text-sm text-center mt-5 mb-2">
+                    {settings.venueName}
+                  </h3>
+                  <p className="text-sm text-center font-legan text-white">
+                    {settings.venueAddress}
+                  </p>
+                  <div className="mt-5 flex flex-wrap justify-center gap-3">
+                    <Link
+                      href={settings.mapLink}
+                      target="_blank"
+                      className="cursor-pointer hover:text-white/70 text-sm rounded-full flex items-center gap-x-2 text-center font-legan bg-[#808080] w-fit px-4 py-2 text-white"
+                    >
+                      {settings.directionsButtonLabel}
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={toggleMusic}
+                      className="cursor-pointer hover:text-white/70 text-sm rounded-full flex items-center gap-x-2 text-center font-legan bg-[#4E4E4E] w-fit px-4 py-2 text-white"
+                    >
+                      {isPlaying ? "Pause Music" : "Play Music"}
+                    </button>
                   </div>
-                ))}
+                </div>
               </div>
-            </div>
-          </section>
+            </Slide>
 
-          <section className="bg-[#17120e] px-6 py-20">
-            <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[0.9fr_1.1fr]">
-              <div className="rounded-[2rem] border border-white/10 bg-white/5 p-8">
-                <p className="font-legan text-sm uppercase tracking-[0.35em] text-[#d5b37b]">
-                  Venue & Directions
+            <Slide backgroundImage={gallery[2]} className="flex flex-col items-center justify-end pb-16 px-12">
+              <div ref={slide5Ref} className={`${slide5InView ? "active" : ""} fadeInMove flex items-center flex-col`}>
+                <h1 className="text-2xl text-center text-white font-ovo uppercase">
+                  Almost Time For Our Celebration
+                </h1>
+                <CountdownStrip eventDate={settings.eventDate} />
+              </div>
+            </Slide>
+
+            <Slide backgroundImage={gallery[3]} className="flex flex-col justify-between pt-16 pb-24 px-12">
+              <h1 ref={slide6Ref} className={`text-2xl text-white font-ovo fadeInMoveSlow ${slide6InView ? "active" : ""}`}>
+                Venue And Directions
+              </h1>
+              <div className={`mt-5 mx-auto flex flex-col fadeInMove ${slide6InView ? "active" : ""}`} ref={slide6Ref}>
+                <h3 className="uppercase font-ovo text-sm mt-5 mb-2">
+                  {settings.venueName}
+                </h3>
+                <p className="text-sm font-legan text-white">
+                  {settings.venueAddress}
                 </p>
-                <h3 className="mt-4 font-ovo text-4xl">{settings.venueName}</h3>
-                <p className="mt-4 text-sm leading-7 text-white/72">{settings.venueAddress}</p>
                 <Link
                   href={settings.mapLink}
                   target="_blank"
-                  className="mt-6 inline-flex rounded-full bg-[#d5b37b] px-5 py-3 text-xs font-semibold uppercase tracking-[0.3em] text-[#120f0c]"
+                  className="cursor-pointer hover:text-white/70 text-sm rounded-full flex items-center gap-x-2 text-center font-legan mt-5 bg-[#3B3B3B] w-fit px-6 py-2 text-white"
                 >
                   Open In Google Maps
                 </Link>
-              </div>
-
-              <div className="rounded-[2rem] border border-white/10 bg-white/5 p-4">
                 {settings.mapEmbedUrl ? (
-                  <iframe
-                    src={settings.mapEmbedUrl}
-                    className="h-[22rem] w-full rounded-[1.5rem]"
-                    loading="lazy"
-                  />
-                ) : (
-                  <div className="flex h-[22rem] items-center justify-center rounded-[1.5rem] border border-dashed border-white/15 text-center text-sm text-white/45">
-                    Add an embedded map in the admin dashboard to show it here.
+                  <div className="mt-6 overflow-hidden rounded-3xl border border-white/20">
+                    <iframe
+                      src={settings.mapEmbedUrl}
+                      className="h-56 w-full"
+                      loading="lazy"
+                    />
                   </div>
-                )}
+                ) : null}
               </div>
-            </div>
-          </section>
+            </Slide>
 
-          <section className="bg-[#120f0c] px-6 py-20">
-            <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[0.95fr_1.05fr]">
-              <div className="rounded-[2rem] border border-white/10 bg-white/5 p-8">
-                <p className="font-legan text-sm uppercase tracking-[0.35em] text-[#d5b37b]">
+            <Slide backgroundImage={heroBackground} className="flex flex-col justify-center pt-16 pb-16 px-8">
+              <div ref={slide7Ref} className={`${slide7InView ? "active" : ""} fadeInMove`}>
+                <h1 className="text-3xl text-white font-ovo text-center uppercase">
                   {settings.rsvpTitle}
+                </h1>
+                <p className="text-sm font-legan text-white/80 text-center">
+                  {settings.rsvpDescription}
                 </p>
-                <h3 className="mt-4 font-ovo text-4xl">
-                  {invite && invite.inviteType === "named" && invite.guestName
-                    ? `Confirm Your Attendance, ${invite.guestName}`
-                    : "Leave Your Response"}
-                </h3>
-                <p className="mt-4 text-sm leading-7 text-white/68">{settings.rsvpDescription}</p>
 
-                <form className="mt-8 space-y-4" onSubmit={handleWishFormSubmit}>
-                  <input
-                    name="name"
-                    defaultValue={invite && invite.inviteType === "named" ? invite.guestName : ""}
-                    placeholder={isOpenInvite ? "Your name" : "Your name"}
-                    className="w-full rounded-2xl border border-white/10 bg-[#0e0b09] px-4 py-3 text-sm text-white outline-none"
-                    required
-                    readOnly={Boolean(invite && invite.inviteType === "named" && invite.guestName)}
-                  />
-                  <select
-                    name="attendance"
-                    defaultValue="attending"
-                    onChange={(event) => setAttendance(event.target.value)}
-                    className="w-full rounded-2xl border border-white/10 bg-[#0e0b09] px-4 py-3 text-sm text-white outline-none"
-                  >
-                    <option value="attending">Attending</option>
-                    <option value="not_attending">Not Attending</option>
-                  </select>
-                  <select
-                    name="guests"
-                    defaultValue={invite ? String(Math.max(1, invite.allowedGuests)) : "1"}
-                    className="w-full rounded-2xl border border-white/10 bg-[#0e0b09] px-4 py-3 text-sm text-white outline-none"
-                    disabled={attendance === "not_attending"}
-                  >
-                    {Array.from({ length: invite?.allowedGuests || 4 }, (_, index) => index + 1).map((count) => (
-                      <option key={count} value={count}>
-                        Bringing {count} {count === 1 ? "person" : "people"}
-                      </option>
-                    ))}
-                  </select>
-                  {invite ? (
-                    <p className="text-xs leading-6 text-white/45">
-                      Maximum allowed guests for this link: {invite.allowedGuests}
-                    </p>
-                  ) : null}
-                  <textarea
-                    name="message"
-                    placeholder="Write your wishes or note for the event"
-                    rows={5}
-                    className="w-full rounded-2xl border border-white/10 bg-[#0e0b09] px-4 py-3 text-sm text-white outline-none"
-                    required
-                  />
-                  <button
-                    type="submit"
-                    disabled={submitting}
-                    className="rounded-full bg-[#d5b37b] px-6 py-3 text-xs font-semibold uppercase tracking-[0.3em] text-[#120f0c]"
-                  >
-                    {submitting ? "Saving..." : "Save Response"}
-                  </button>
-                  {wishStatus ? (
-                    <p className="text-sm text-[#f5d9a4]">{wishStatus}</p>
-                  ) : null}
+                <form onSubmit={handleWishFormSubmit} className="mt-8 space-y-4 rounded-2xl bg-black/40 p-4">
+                  <div>
+                    <label htmlFor="name" className="block text-sm font-medium text-white">
+                      Name
+                    </label>
+                    <input
+                      type="text"
+                      name="name"
+                      id="name"
+                      defaultValue={invite && invite.inviteType === "named" ? invite.guestName : ""}
+                      readOnly={Boolean(invite && invite.inviteType === "named" && invite.guestName)}
+                      className="block w-full p-2 mt-1 bg-white/10 text-white border border-gray-300 rounded-md shadow-sm sm:text-sm"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="attendance" className="block text-sm font-medium text-white">
+                      Attendance
+                    </label>
+                    <select
+                      id="attendance"
+                      name="attendance"
+                      onChange={(event) => setAttendance(event.target.value)}
+                      className="block w-full p-2 mt-1 bg-black/40 text-white border border-gray-300 rounded-md shadow-sm sm:text-sm"
+                      required
+                    >
+                      <option value="attending">Attending</option>
+                      <option value="not_attending">Not Attending</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label htmlFor="guests" className="block text-sm font-medium text-white">
+                      Number Of Guests
+                    </label>
+                    <select
+                      id="guests"
+                      name="guests"
+                      disabled={attendance === "not_attending"}
+                      className="block w-full p-2 mt-1 bg-black/40 text-white border border-gray-300 rounded-md shadow-sm sm:text-sm"
+                      required
+                    >
+                      {Array.from({ length: invite?.allowedGuests || 4 }, (_, index) => index + 1).map((count) => (
+                        <option key={count} value={count}>
+                          {count}
+                        </option>
+                      ))}
+                    </select>
+                    {invite ? (
+                      <p className="mt-2 text-xs text-white/70">
+                        Maximum allowed for this link: {invite.allowedGuests}
+                      </p>
+                    ) : null}
+                  </div>
+
+                  <div>
+                    <label htmlFor="message" className="block text-sm font-medium text-white">
+                      Message
+                    </label>
+                    <textarea
+                      id="message"
+                      name="message"
+                      rows={4}
+                      className="block w-full p-2 mt-1 bg-white/10 text-white border border-gray-300 rounded-md shadow-sm sm:text-sm"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <button
+                      type="submit"
+                      className="block w-full p-2 text-sm font-medium text-center text-black bg-white border border-transparent rounded-md shadow-sm"
+                      disabled={submitting}
+                    >
+                      {submitting ? "Submitting..." : "Submit"}
+                    </button>
+                  </div>
+
+                  {wishStatus ? <p className="text-sm text-white">{wishStatus}</p> : null}
                 </form>
               </div>
+            </Slide>
 
-              <div className="rounded-[2rem] border border-white/10 bg-white/5 p-8">
-                <p className="font-legan text-sm uppercase tracking-[0.35em] text-[#d5b37b]">
+            <Slide backgroundImage={storyImage} className="flex flex-col justify-center pt-16 pb-16 px-8">
+              <div ref={slide8Ref} className={`${slide8InView ? "active" : ""} fadeInMove`}>
+                <h1 className="text-3xl text-white font-ovo text-center uppercase">
                   {settings.wishesTitle}
-                </p>
-                <div className="mt-6 space-y-5">
-                  {wishes.length === 0 ? (
-                    <div className="rounded-[1.5rem] border border-dashed border-white/15 p-6 text-sm text-white/50">
-                      No messages yet. Be the first guest to leave a note.
-                    </div>
-                  ) : (
-                    wishes.map((wish) => (
-                      <div key={wish.id} className="rounded-[1.5rem] border border-white/8 bg-[#0f0c09] p-5">
-                        <div className="flex items-center justify-between gap-4">
-                          <p className="font-ovo text-xl">{wish.name}</p>
-                          <p className="text-xs uppercase tracking-[0.24em] text-white/40">
-                            {wish.attendanceStatus.replace(/_/g, " ")}
+                </h1>
+                <div className="bg-black/50 text-white p-4 rounded-md mt-5">
+                  <div className="max-h-[420px] overflow-y-auto">
+                    {wishes.length === 0 ? (
+                      <p>No wishes available</p>
+                    ) : (
+                      wishes.map((wish) => (
+                        <div key={wish.id} className="mb-4">
+                          <p className="font-bold font-legan">{wish.name}</p>
+                          <p className="text-sm my-2 opacity-50">
+                            {wish.createdAt
+                              ? new Date(wish.createdAt).toLocaleString("en-US", {
+                                  year: "numeric",
+                                  month: "long",
+                                  day: "numeric",
+                                  hour: "numeric",
+                                  minute: "numeric",
+                                })
+                              : ""}
                           </p>
+                          <p className="text-sm">{wish.message}</p>
+                          <hr className="my-2 border-gray-400" />
                         </div>
-                        <p className="mt-3 text-sm leading-7 text-white/70">{wish.message}</p>
-                        <p className="mt-4 text-xs text-white/35">
-                          {wish.createdAt
-                            ? new Date(wish.createdAt).toLocaleString("en-US", {
-                                year: "numeric",
-                                month: "short",
-                                day: "numeric",
-                                hour: "numeric",
-                                minute: "2-digit",
-                              })
-                            : ""}
-                        </p>
-                      </div>
-                    ))
-                  )}
+                      ))
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          </section>
+            </Slide>
 
-          <footer className="bg-[#0b0908] px-6 py-16">
-            <div className="mx-auto flex max-w-6xl flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
-              <div>
-                <p className="font-ovo text-3xl">{settings.eventName}</p>
-                <p className="mt-3 max-w-xl text-sm leading-7 text-white/62">{settings.footerNote}</p>
-              </div>
+            <Slide backgroundImage={heroSide} className="flex flex-col justify-end pt-16 pb-16 px-12">
+              <div ref={slide9Ref} className={`${slide9InView ? "active" : ""} fadeInMove`}>
+                <h1 className="text-3xl text-white font-ovo text-center uppercase">
+                  {settings.footerNote}
+                </h1>
 
-              <div className="flex flex-wrap gap-3 text-lg">
-                {settings.instagramUrl ? (
-                  <Link href={settings.instagramUrl} target="_blank" className="rounded-full border border-white/10 p-3">
-                    <FaInstagram />
-                  </Link>
-                ) : null}
-                {settings.facebookUrl ? (
-                  <Link href={settings.facebookUrl} target="_blank" className="rounded-full border border-white/10 p-3">
-                    <FaFacebookF />
-                  </Link>
-                ) : null}
-                {settings.tiktokUrl ? (
-                  <Link href={settings.tiktokUrl} target="_blank" className="rounded-full border border-white/10 p-3">
-                    <FaTiktok />
-                  </Link>
-                ) : null}
-                {settings.whatsappUrl ? (
-                  <Link href={settings.whatsappUrl} target="_blank" className="rounded-full border border-white/10 p-3">
-                    <FaWhatsapp />
-                  </Link>
-                ) : null}
-                {settings.telegramUrl ? (
-                  <Link href={settings.telegramUrl} target="_blank" className="rounded-full border border-white/10 p-3">
-                    <FaTelegramPlane />
-                  </Link>
-                ) : null}
+                <div className="mt-5 mx-auto flex flex-col items-center">
+                  <p className="text-sm font-legan text-white text-center">
+                    {settings.eventName}
+                  </p>
+                  <div className="mt-6 flex flex-wrap justify-center gap-3 text-lg">
+                    {settings.instagramUrl ? (
+                      <Link href={settings.instagramUrl} target="_blank" className="cursor-pointer hover:bg-black text-sm rounded-full flex items-center gap-x-2 text-center font-legan bg-[#4E4E4E] w-fit px-4 py-2 text-[#CCCCCC]">
+                        <FaInstagram />
+                      </Link>
+                    ) : null}
+                    {settings.facebookUrl ? (
+                      <Link href={settings.facebookUrl} target="_blank" className="cursor-pointer hover:bg-black text-sm rounded-full flex items-center gap-x-2 text-center font-legan bg-[#4E4E4E] w-fit px-4 py-2 text-[#CCCCCC]">
+                        <FaFacebookF />
+                      </Link>
+                    ) : null}
+                    {settings.tiktokUrl ? (
+                      <Link href={settings.tiktokUrl} target="_blank" className="cursor-pointer hover:bg-black text-sm rounded-full flex items-center gap-x-2 text-center font-legan bg-[#4E4E4E] w-fit px-4 py-2 text-[#CCCCCC]">
+                        <FaTiktok />
+                      </Link>
+                    ) : null}
+                    {settings.whatsappUrl ? (
+                      <Link href={settings.whatsappUrl} target="_blank" className="cursor-pointer hover:bg-black text-sm rounded-full flex items-center gap-x-2 text-center font-legan bg-[#4E4E4E] w-fit px-4 py-2 text-[#CCCCCC]">
+                        <FaWhatsapp />
+                      </Link>
+                    ) : null}
+                    {settings.telegramUrl ? (
+                      <Link href={settings.telegramUrl} target="_blank" className="cursor-pointer hover:bg-black text-sm rounded-full flex items-center gap-x-2 text-center font-legan bg-[#4E4E4E] w-fit px-4 py-2 text-[#CCCCCC]">
+                        <FaTelegramPlane />
+                      </Link>
+                    ) : null}
+                  </div>
+                </div>
               </div>
-            </div>
-          </footer>
-        </main>
-      ) : null}
+            </Slide>
+          </>
+        )}
+      </div>
+
+      <audio ref={audioRef} src={musicUrl} preload="auto" />
     </div>
   );
 }

@@ -37,3 +37,55 @@ body {
 a {
   text-decoration: none;
 }
+
+.fadeMain {
+  opacity: 0;
+  transition: opacity 2.4s ease-in;
+}
+
+.fadeMain2 {
+  opacity: 0;
+  transition: opacity 0.8s ease-out;
+}
+
+.fadeInMove {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 1.3s ease-out, transform 1.3s ease-out;
+}
+
+.fadeInMoveSlow {
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: opacity 2s ease-out, transform 2s ease-out;
+}
+
+.fadeInLeft {
+  opacity: 0;
+  transform: translateX(-40px);
+  transition: opacity 1.5s ease-out, transform 1.5s ease-out;
+}
+
+.fadeInLeftSlow {
+  opacity: 0;
+  transform: translateX(-40px);
+  transition: opacity 2.2s ease-out, transform 2.2s ease-out;
+}
+
+.active {
+  opacity: 1;
+  transform: translate(0, 0);
+}
+
+@keyframes upDown {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-upDown {
+  animation: upDown 1.4s ease-in-out infinite;
+}

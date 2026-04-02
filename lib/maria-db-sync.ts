@@ -1,5 +1,4 @@
-import mysql from "mysql2/promise";
-
+// Optional legacy sync helper. The main app runs on Supabase and does not require mysql2.
 export interface MariaDBSyncData {
   name: string;
   message?: string;
@@ -18,6 +17,7 @@ export async function syncToMariaDB(data: MariaDBSyncData) {
 
   let connection;
   try {
+    const mysql = await (new Function('return import("mysql2/promise")')() as Promise<any>);
     connection = await mysql.createConnection(connectionString);
     
     // Create table if not exists
