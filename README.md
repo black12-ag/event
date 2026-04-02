@@ -175,3 +175,65 @@ npm run lint
 ## Deployment
 
 This app can be deployed on any Next.js-compatible platform after setting the required environment variables and MongoDB connection string.
+
+## Cloudflare Pages Setup
+
+If you connect this repository from the Cloudflare Pages screen shown in your screenshot, use these values:
+
+- Production branch: `main`
+- Framework preset: `Next.js`
+- Build command: `npm install && npm run build`
+- Build output directory: `.next`
+- Root directory: leave empty unless you move the project into a subfolder
+
+### Environment Variables
+
+Add these in Cloudflare Pages before deploying:
+
+```env
+MONGODB_URI=
+NEXT_PUBLIC_COUPLE_NAMES=
+NEXT_PUBLIC_EVENT_DATE=
+NEXT_PUBLIC_GROOM_NAME=
+NEXT_PUBLIC_GROOM_NICKNAME=
+NEXT_PUBLIC_GROOM_INSTAGRAM=
+NEXT_PUBLIC_GROOM_BIO=
+NEXT_PUBLIC_BRIDE_NAME=
+NEXT_PUBLIC_BRIDE_NICKNAME=
+NEXT_PUBLIC_BRIDE_INSTAGRAM=
+NEXT_PUBLIC_BRIDE_BIO=
+NEXT_PUBLIC_BIBLE_VERSE=
+NEXT_PUBLIC_BIBLE_VERSE_CONTENT=
+NEXT_PUBLIC_YEAR_1=
+NEXT_PUBLIC_YEAR_1_CONTENT=
+NEXT_PUBLIC_YEAR_2=
+NEXT_PUBLIC_YEAR_2_CONTENT=
+NEXT_PUBLIC_YEAR_3=
+NEXT_PUBLIC_YEAR_3_CONTENT=
+NEXT_PUBLIC_HOLY_MATRIMONY=
+NEXT_PUBLIC_HOLY_MATRIMONY_TIME=
+NEXT_PUBLIC_HOLY_MATRIMONY_PLACE=
+NEXT_PUBLIC_HOLY_MATRIMONY_PLACE_DETAILS=
+NEXT_PUBLIC_HOLY_MATRIMONY_GOOGLE_MAPS=
+NEXT_PUBLIC_WEDDING_RECEPTION=
+NEXT_PUBLIC_WEDDING_RECEPTION_TIME=
+NEXT_PUBLIC_WEDDING_RECEPTION_PLACE=
+NEXT_PUBLIC_WEDDING_RECEPTION_PLACE_DETAILS=
+NEXT_PUBLIC_WEDDING_RECEPTION_GOOGLE_MAPS=
+NEXT_PUBLIC_LIVE_STREAMING=
+NEXT_PUBLIC_LIVE_STREAMING_TIME=
+NEXT_PUBLIC_LIVE_STREAMING_LINK=
+NEXT_PUBLIC_LIVE_STREAMING_DETAIL=
+NEXT_PUBLIC_PREWEDDING=
+NEXT_PUBLIC_PREWEDDING_CODE_LINK_EMBED=
+NEXT_PUBLIC_PREWEDDING_DETAIL=
+NEXT_PUBLIC_RSVP=
+NEXT_PUBLIC_RSVP_DETAIL=
+NEXT_PUBLIC_THANKYOU=
+NEXT_PUBLIC_THANKYOU_DETAIL=
+```
+
+### Important Note
+
+This repository is currently a standard Next.js application using MongoDB and API routes.
+If Cloudflare Pages gives you build or runtime limitations for server-side routes, the next step would be converting it to a Cloudflare Worker/OpenNext setup.
