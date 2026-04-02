@@ -2,6 +2,7 @@ import crypto from "crypto";
 import { defaultEventSettings, defaultMediaAssets } from "./defaults";
 import { getSupabaseAdmin } from "./db";
 import { EventSettings, Invite, InviteSummary, MediaAsset, Wish } from "./types";
+import { syncToMariaDB } from "./maria-db-sync";
 
 const EVENT_SETTINGS_TABLE = "event_settings";
 const INVITES_TABLE = "invites";
@@ -447,6 +448,16 @@ export const submitInviteRsvp = async (
   } else {
     await supabase.from(WISHES_TABLE).insert([payload]);
   }
+
+  // Sync to MariaDB
+  await syncToMariaDB({
+    name,
+    message,
+    attendance_status: attendanceStatus,
+    guests: cappedGuests,
+    source: "rsvp",
+    invite_slug: slug
+  });
 };
 
 export const listWishes = async (page = 1, limit = 6) => {
@@ -491,4 +502,13 @@ export const submitGeneralWish = async (
   ]);
 
   if (error) throw error;
+
+  // Sync to MariaDB
+  await syncToMariaDB({
+    name,
+    message,
+    attendance_status: attendanceStatus,
+    guests: Math.max(0, guests),
+    source: "wish"
+  });
 };
