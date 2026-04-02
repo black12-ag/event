@@ -88,6 +88,9 @@ const mediaHelp: Record<string, string> = {
 export default function AdminDashboard({
   initialAuthenticated,
 }: AdminDashboardProps) {
+  const [activePanel, setActivePanel] = useState<
+    "setup" | "media" | "invites" | "tracking"
+  >("setup");
   const [authenticated, setAuthenticated] = useState(initialAuthenticated);
   const [pin, setPin] = useState("");
   const [error, setError] = useState("");
@@ -245,6 +248,13 @@ export default function AdminDashboard({
     [media]
   );
 
+  const panelButtonClass = (panel: "setup" | "media" | "invites" | "tracking") =>
+    `rounded-full px-4 py-3 text-xs font-semibold uppercase tracking-[0.24em] transition ${
+      activePanel === panel
+        ? "bg-[#d5b37b] text-[#120f0c]"
+        : "border border-white/10 text-white/72 hover:border-white/20 hover:text-white"
+    }`;
+
   const buildShareText = (invite: Invite) =>
     invite.inviteType === "open"
       ? `You are invited to ${settings.eventName}. Open your invitation here:`
@@ -373,12 +383,35 @@ export default function AdminDashboard({
           </div>
         </div>
 
-        <div className="grid gap-8 xl:grid-cols-[1.15fr_0.85fr]">
+        <div className="rounded-[2rem] border border-white/10 bg-white/5 p-6">
+          <div className="flex flex-wrap gap-3">
+            <button type="button" onClick={() => setActivePanel("setup")} className={panelButtonClass("setup")}>
+              1. Event Setup
+            </button>
+            <button type="button" onClick={() => setActivePanel("media")} className={panelButtonClass("media")}>
+              2. Images & Music
+            </button>
+            <button type="button" onClick={() => setActivePanel("invites")} className={panelButtonClass("invites")}>
+              3. Guest Links
+            </button>
+            <button type="button" onClick={() => setActivePanel("tracking")} className={panelButtonClass("tracking")}>
+              4. Tracking
+            </button>
+          </div>
+          <p className="mt-4 text-sm leading-7 text-white/62">
+            Work one step at a time. The organizer does not need to use every section on every visit.
+          </p>
+        </div>
+
+        {activePanel === "setup" ? (
           <div className="rounded-[2rem] border border-white/10 bg-white/5 p-8">
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-legan text-sm uppercase tracking-[0.35em] text-[#d5b37b]">Event Settings</p>
                 <h2 className="mt-3 font-ovo text-3xl">Public Site Content</h2>
+                <p className="mt-3 text-sm leading-7 text-white/62">
+                  Start here. These are the main words and links guests will see on the public page.
+                </p>
               </div>
               <button
                 type="button"
@@ -623,7 +656,66 @@ export default function AdminDashboard({
               </p>
             </div>
           </div>
+        ) : null}
 
+        {activePanel === "media" ? (
+          <div className="space-y-8">
+            <div className="rounded-[2rem] border border-white/10 bg-white/5 p-8">
+              <p className="font-legan text-sm uppercase tracking-[0.35em] text-[#d5b37b]">Media Manager</p>
+              <h2 className="mt-3 font-ovo text-3xl">Images & Music</h2>
+              <p className="mt-3 text-sm leading-7 text-white/62">
+                Replace any image or music file and it will update the same place on the public page.
+              </p>
+              {mediaMessage ? (
+                <p className="mt-3 text-sm text-[#f1d5a4]">{mediaMessage}</p>
+              ) : null}
+              <div className="mt-6 space-y-5">
+                {groupedMedia.map((item) => (
+                  <div key={item.slotKey} className="rounded-[1.5rem] border border-white/8 bg-[#0c0907] p-4">
+                    <div className="flex items-center justify-between gap-4">
+                      <div>
+                        <p className="font-ovo text-xl">{item.label}</p>
+                        <p className="text-xs uppercase tracking-[0.24em] text-white/38">{item.slotKey}</p>
+                        <p className="mt-2 text-xs leading-6 text-white/42">
+                          {mediaHelp[item.slotKey] || "This slot updates one part of the public page."}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleMediaClear(item.slotKey)}
+                        disabled={mediaBusyKey === item.slotKey}
+                        className="text-xs uppercase tracking-[0.28em] text-rose-300"
+                      >
+                        {mediaBusyKey === item.slotKey ? "Working..." : "Clear"}
+                      </button>
+                    </div>
+                    <div className="mt-4">
+                      {item.type === "image" ? (
+                        <img src={item.publicUrl} alt={item.label} className="h-40 w-full rounded-2xl object-cover" />
+                      ) : (
+                        <audio controls className="w-full" src={item.publicUrl} />
+                      )}
+                    </div>
+                    <input
+                      type="file"
+                      accept={item.type === "image" ? "image/*" : "audio/*"}
+                      className="mt-4 block w-full text-sm text-white/75"
+                      disabled={mediaBusyKey === item.slotKey}
+                      onChange={(event) => handleMediaUpload(item.slotKey, item.type, event.target.files?.[0] || null)}
+                    />
+                    <p className="mt-2 text-xs leading-6 text-white/38">
+                      {item.type === "image"
+                        ? "Upload a replacement image for this exact slot on the public page."
+                        : "Upload a replacement music file for the public audio player."}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : null}
+
+        {activePanel === "invites" ? (
           <div className="space-y-8">
             <div className="rounded-[2rem] border border-white/10 bg-white/5 p-8">
               <p className="font-legan text-sm uppercase tracking-[0.35em] text-[#d5b37b]">Create Invite</p>
@@ -691,58 +783,10 @@ export default function AdminDashboard({
                 </button>
               </form>
             </div>
-
-            <div className="rounded-[2rem] border border-white/10 bg-white/5 p-8">
-              <p className="font-legan text-sm uppercase tracking-[0.35em] text-[#d5b37b]">Media Manager</p>
-              {mediaMessage ? (
-                <p className="mt-3 text-sm text-[#f1d5a4]">{mediaMessage}</p>
-              ) : null}
-              <div className="mt-6 space-y-5">
-                {groupedMedia.map((item) => (
-                  <div key={item.slotKey} className="rounded-[1.5rem] border border-white/8 bg-[#0c0907] p-4">
-                    <div className="flex items-center justify-between gap-4">
-                      <div>
-                        <p className="font-ovo text-xl">{item.label}</p>
-                        <p className="text-xs uppercase tracking-[0.24em] text-white/38">{item.slotKey}</p>
-                        <p className="mt-2 text-xs leading-6 text-white/42">
-                          {mediaHelp[item.slotKey] || "This slot updates one part of the public page."}
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => handleMediaClear(item.slotKey)}
-                        disabled={mediaBusyKey === item.slotKey}
-                        className="text-xs uppercase tracking-[0.28em] text-rose-300"
-                      >
-                        {mediaBusyKey === item.slotKey ? "Working..." : "Clear"}
-                      </button>
-                    </div>
-                    <div className="mt-4">
-                      {item.type === "image" ? (
-                        <img src={item.publicUrl} alt={item.label} className="h-40 w-full rounded-2xl object-cover" />
-                      ) : (
-                        <audio controls className="w-full" src={item.publicUrl} />
-                      )}
-                    </div>
-                    <input
-                      type="file"
-                      accept={item.type === "image" ? "image/*" : "audio/*"}
-                      className="mt-4 block w-full text-sm text-white/75"
-                      disabled={mediaBusyKey === item.slotKey}
-                      onChange={(event) => handleMediaUpload(item.slotKey, item.type, event.target.files?.[0] || null)}
-                    />
-                    <p className="mt-2 text-xs leading-6 text-white/38">
-                      {item.type === "image"
-                        ? "Upload a replacement image for this exact slot on the public page."
-                        : "Upload a replacement music file for the public audio player."}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
           </div>
-        </div>
+        ) : null}
 
+        {activePanel === "tracking" || activePanel === "invites" ? (
         <div className="rounded-[2rem] border border-white/10 bg-white/5 p-8">
           <div className="flex items-center justify-between">
             <div>
@@ -891,6 +935,7 @@ export default function AdminDashboard({
             })}
           </div>
         </div>
+        ) : null}
       </div>
     </div>
   );
