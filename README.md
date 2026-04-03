@@ -1,170 +1,90 @@
-# Buna House Event Platform
+# Buna House Event Platform ☕️
 
-An admin-managed event website for a coffee house opening, built with Next.js, Tailwind CSS, and Supabase.
+A sophisticated, modern event management platform for the **Buna House Opening Ceremony**. Built with Next.js and deployed on Cloudflare Pages, this platform provides a seamless RSVP experience for guests and a powerful administrative dashboard for event organizers.
 
-## Overview
+🔗 **Live Platform**: [event.ethio-viral.com](https://event.ethio-viral.com/)
 
-This project turns the old invitation flow into a live event platform with:
+---
 
-- a public landing page for the opening event
-- personalized guest pages with unique invite links
-- a protected admin dashboard at `/ad`
-- invite tracking for link opens and RSVP responses
-- editable event copy, map links, music, social links, and media slots
-- Supabase-backed storage for settings, invites, wishes, and uploaded assets
+## 🏛 System Architecture
 
-## Main Routes
+The platform leverages a serverless, edge-first architecture to ensure maximum performance and global availability.
 
-- `/` public event page
-- `/[slug]` personalized invite page
-- `/ad` admin dashboard protected by a 4-digit PIN
-
-## Admin Features
-
-- event settings editor
-- guest invite creation with unique links
-- per-invite guest allowance
-- open tracking and RSVP analytics
-- media upload, preview, replacement, and reset
-- editable Google Maps link and embedded map URL
-- editable Instagram, Facebook, TikTok, WhatsApp, and Telegram links
-
-## Tech Stack
-
-- Next.js 14
-- React 18
-- TypeScript
-- Tailwind CSS
-- Supabase Postgres
-- Supabase Storage
-
-## Project Structure
-
-```text
-app/
-  ad/page.tsx
-  [slug]/page.tsx
-  api/
-    admin/
-    get/route.ts
-    invitation/[slug]/
-    submit/route.ts
-  components/
-    AdminDashboard.tsx
-    EventExperience.tsx
-lib/
-  admin-auth.ts
-  db.ts
-  defaults.ts
-  event-data.ts
-  types.ts
-public/
-supabase_schema.sql
+```mermaid
+graph TD;
+    Guest((Guest)) -->|RSVP/Check-in| CF[Cloudflare Pages Edge Runtime];
+    Admin((Admin)) -->|Manage Events| CF;
+    CF -->|Next.js App Router| App[Event Application];
+    App -->|Data & Auth| Supabase[(Supabase Postgres)];
+    App -->|Dynamic Assets| Storage[(Supabase Storage)];
+    Supabase -.->|Real-time Updates| App;
 ```
 
-## Supabase Setup
+---
 
-Create these environment variables before running locally or deploying:
+## ✨ Key Features
+
+-   **Dynamic Event Invitations**: Personalized invitation pages with unique slugs for guests.
+-   **Seamless RSVP Flow**: Interactive forms for guest confirmation and attendance tracking.
+-   **Admin Dashboard**: Secure control panel for managing guest lists, event details, and branding.
+-   **Edge Performance**: Deployed on Cloudflare's global network for sub-100ms response times.
+-   **Rich Aesthetics**: Vibrant, premium design with custom typography and smooth animations.
+
+---
+
+## 🛠 Tech Stack
+
+-   **Framework**: [Next.js 14](https://nextjs.org/) (App Router)
+-   **Runtime**: [Cloudflare Pages](https://pages.cloudflare.com/) (Edge Runtime)
+-   **Database & Auth**: [Supabase](https://supabase.com/)
+-   **Styling**: Vanilla CSS & TailwindCSS
+-   **Icons**: React Icons
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+-   Node.js 18+
+-   Supabase Project
+-   Cloudflare Account (for deployment)
+
+### Environment Variables
+
+Create a `.env.local` file with the following:
 
 ```env
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-SUPABASE_URL=
-SUPABASE_SERVICE_ROLE_KEY=
-ADMIN_PIN=2580
-ADMIN_SESSION_SECRET=
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+ADMIN_PIN=your_admin_pin
 ```
 
-Do not commit a real `ADMIN_PIN` in source control. Set it only in your local `.env` file and hosting provider secrets/environment settings.
-
-Apply the database and storage schema from:
-
-```text
-/Users/munir/Documents/invetation/supabase_schema.sql
-```
-
-The schema creates:
-
-- `event_settings`
-- `invites`
-- `wishes`
-- `media_assets`
-- storage buckets:
-  - `event-images`
-  - `event-audio`
-
-## Local Development
-
-Install dependencies:
+### Installation
 
 ```bash
+# Install dependencies
 npm install
-```
 
-Run the app:
-
-```bash
+# Run the development server
 npm run dev
+
+# Build for Cloudflare Pages
+npm run pages:build
 ```
 
-Open:
+---
 
-```text
-http://localhost:3000
-```
+## ⚙️ Deployment
 
-Admin:
+The project is optimized for Cloudflare Pages using the `@cloudflare/next-on-pages` adapter.
 
-```text
-http://localhost:3000/ad
-```
+1.  Push changes to GitHub.
+2.  Connect the repository to Cloudflare Pages.
+3.  Configure environment variables in the Cloudflare Dashboard.
+4.  Set the build command to `npm run pages:build` and the output directory to `.vercel/output/static`.
 
-## Deployment Notes
+---
 
-For Cloudflare Pages:
-
-- Production branch: `main`
-- Framework preset: `Next.js`
-- Build command: `npm install && npm run build`
-
-Make sure all Supabase environment variables are configured in the deployment settings.
-
-## Content Model
-
-The public site is fully editable from the admin dashboard:
-
-- event name and hero copy
-- story/about section
-- date and time
-- venue and map links
-- RSVP messaging
-- footer note
-- music
-- image slots
-- social links
-
-## Invite Flow
-
-Each guest gets a unique slug-based link. When they open it:
-
-- their name appears in the hero section
-- the invite is marked as opened
-- they can confirm attendance
-- they can choose how many guests they are bringing, up to the admin-set limit
-- the admin dashboard updates with response and guest totals
-
-## Media Behavior
-
-- images and audio are managed by named slots
-- replacing an asset updates the active public URL
-- clearing a slot resets it to the default fallback asset
-- old uploaded files remain in storage unless manually cleaned later
-
-## Scripts
-
-```bash
-npm run dev
-npm run build
-npm run start
-npm run lint
-```
+© 2026 Buna House. All rights reserved.

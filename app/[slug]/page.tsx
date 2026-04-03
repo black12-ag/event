@@ -5,6 +5,8 @@ import EventExperience from "../components/EventExperience";
 import { getEventSettings, getInviteBySlug, getMediaAssets, listWishes } from "@/lib/event-data";
 
 export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
+
 
 type SlugPageProps = {
   params: { slug: string };

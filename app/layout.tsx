@@ -1,3 +1,6 @@
+export const runtime = "edge";
+export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
 import type { Metadata } from "next";
 import { Ovo } from "next/font/google";
 import localFont from "next/font/local";

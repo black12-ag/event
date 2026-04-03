@@ -8,3 +8,12 @@ dist
 coverage
 *.log
 tsconfig.tsbuildinfo
+
+# Local Netlify folder
+.netlify
+
+# Build artifacts
+.vercel
+build_output.txt
+body.html
+secrets.txt
