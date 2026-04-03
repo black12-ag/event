@@ -34,6 +34,10 @@ const ovo = Ovo({
 export const metadata: Metadata = {
   title: "Buna House Opening Event",
   description: "Admin-managed coffee house opening event website.",
+  icons: {
+    icon: "/favicon.png",
+    apple: "/favicon.png",
+  },
 };
 
 export default function RootLayout({
