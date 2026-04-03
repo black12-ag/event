@@ -4,7 +4,10 @@ import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { FaFacebookF, FaInstagram, FaTelegramPlane, FaTiktok, FaWhatsapp } from "react-icons/fa";
 import { useInView } from "react-intersection-observer";
+import dynamic from "next/dynamic";
 import { EventSettings, Invite, MediaAsset, Wish } from "@/lib/types";
+
+const ReactPlayer = dynamic(() => import("react-player/lazy"), { ssr: false });
 
 type EventExperienceProps = {
   invite: Invite | null;
@@ -101,12 +104,26 @@ export default function EventExperience({
   const [wishStatus, setWishStatus] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [attendance, setAttendance] = useState("attending");
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [hasStartedMusic, setHasStartedMusic] = useState(false);
 
   const heroBackground = getAssetUrl(media, "hero-background", "/foto_2.jpg");
   const heroSide = getAssetUrl(media, "hero-side", "/foto_1_samping.jpg");
   const storyImage = getAssetUrl(media, "story-image", "/slide_4.jpg");
-  const musicUrl = getAssetUrl(media, "background-music", settings.musicUrl);
+
+  // Determine the best background music URL
+  const musicAsset = media.find((item) => item.slotKey === "background-music");
+  const musicUrl = useMemo(() => {
+    // If user uploaded a custom file to Supabase, it has priority
+    if (musicAsset?.storagePath) {
+      return musicAsset.publicUrl;
+    }
+    // If they provided a custom YouTube/External link, it's next in line
+    if (settings.musicUrl && settings.musicUrl !== "/music/wedding_song.mp3") {
+      return settings.musicUrl;
+    }
+    // Final fallback: the default music file
+    return musicAsset?.publicUrl || "/music/wedding_song.mp3";
+  }, [musicAsset, settings.musicUrl]);
   const gallery = useMemo(
     () =>
       ["gallery-1", "gallery-2", "gallery-3", "gallery-4"].map((slot, index) =>
@@ -170,29 +187,12 @@ export default function EventExperience({
 
   const handleOpen = async () => {
     setIsOpen(true);
-    if (audioRef.current) {
-      try {
-        await audioRef.current.play();
-        setIsPlaying(true);
-      } catch {
-        setIsPlaying(false);
-      }
-    }
+    setIsPlaying(true);
+    setHasStartedMusic(true);
   };
 
-  const toggleMusic = async () => {
-    if (!audioRef.current) return;
-    if (isPlaying) {
-      audioRef.current.pause();
-      setIsPlaying(false);
-      return;
-    }
-    try {
-      await audioRef.current.play();
-      setIsPlaying(true);
-    } catch {
-      setIsPlaying(false);
-    }
+  const toggleMusic = () => {
+    setIsPlaying(!isPlaying);
   };
 
   const handleWishSubmit = async (formData: FormData) => {
@@ -647,7 +647,21 @@ export default function EventExperience({
         )}
       </div>
 
-      <audio ref={audioRef} src={musicUrl} preload="auto" />
+      <div className="hidden">
+        <ReactPlayer
+          url={musicUrl}
+          playing={isPlaying}
+          loop={true}
+          volume={1}
+          width="0"
+          height="0"
+          config={{
+            youtube: {
+              playerVars: { autoplay: 0, controls: 0, showinfo: 0, modestbranding: 1 }
+            }
+          }}
+        />
+      </div>
     </div>
   );
 }

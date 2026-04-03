@@ -2,6 +2,10 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { EventSettings, Invite, InviteSummary, MediaAsset } from "@/lib/types";
+import dynamic from "next/dynamic";
+
+const ReactPlayer = dynamic(() => import("react-player/lazy"), { ssr: false });
+
 
 type AdminDashboardProps = {
   initialAuthenticated: boolean;
@@ -820,20 +824,70 @@ export default function AdminDashboard({
                       {item.type === "image" ? (
                         <img src={item.publicUrl} alt={item.label} className="h-40 w-full rounded-2xl object-cover" />
                       ) : (
-                        <audio controls className="w-full" src={item.publicUrl} />
+                        <div className="space-y-4">
+                          <div className="overflow-hidden rounded-2xl border border-white/10 bg-black/20 p-2">
+                            <ReactPlayer
+                              url={item.slotKey === "background-music" ? (settings.musicUrl || item.publicUrl) : item.publicUrl}
+                              width="100%"
+                              height={item.slotKey === "background-music" ? "60px" : "40px"}
+                              controls
+                              config={{ file: { forceAudio: true } }}
+                            />
+                          </div>
+
+                          {item.slotKey === "background-music" && (
+                            <div className="space-y-3 rounded-2xl border border-white/10 bg-white/5 p-4">
+                              <div className="flex items-center justify-between">
+                                <p className="text-xs font-semibold uppercase tracking-wider text-[#d5b37b]">
+                                  YouTube or External Link
+                                </p>
+                                {settings.musicUrl && settings.musicUrl !== "/music/wedding_song.mp3" && (
+                                  <span className="text-[10px] uppercase tracking-widest text-green-400/80">
+                                    Link Active
+                                  </span>
+                                )}
+                              </div>
+                              <div className="flex gap-2">
+                                <input
+                                  type="text"
+                                  value={settings.musicUrl}
+                                  onChange={(e) => setSettings({ ...settings, musicUrl: e.target.value })}
+                                  placeholder="https://www.youtube.com/watch?v=..."
+                                  className="flex-1 rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white outline-none focus:border-[#d5b37b]/50"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={handleSaveSettings}
+                                  disabled={saving}
+                                  className="rounded-xl bg-[#d5b37b]/20 px-4 py-2 text-xs font-bold uppercase tracking-widest text-[#d5b37b] hover:bg-[#d5b37b]/30"
+                                >
+                                  Save
+                                </button>
+                              </div>
+                              <p className="text-[10px] leading-relaxed text-white/40">
+                                <span className="font-bold text-[#d5b37b]">Note:</span> Uploading an MP3 file below will take priority over this link. Clear the MP3 slot to use the YouTube link.
+                              </p>
+                            </div>
+                          )}
+                        </div>
                       )}
                     </div>
-                    <input
-                      type="file"
-                      accept={item.type === "image" ? "image/*" : "audio/*"}
-                      className="mt-4 block w-full text-sm text-white/75"
-                      disabled={mediaBusyKey === item.slotKey}
-                      onChange={(event) => handleMediaUpload(item.slotKey, item.type, event.target.files?.[0] || null)}
-                    />
+                    <div className="mt-4 flex flex-col gap-2">
+                      <label className="text-xs font-semibold uppercase tracking-wider text-white/50">
+                        {item.type === "image" ? "Upload New Image" : "Upload MP3 File"}
+                      </label>
+                      <input
+                        type="file"
+                        accept={item.type === "image" ? "image/*" : "audio/*"}
+                        className="block w-full text-sm text-white/75 file:mr-4 file:rounded-full file:border-0 file:bg-[#d5b37b]/10 file:px-4 file:py-2 file:text-xs file:font-semibold file:uppercase file:tracking-widest file:text-[#d5b37b] file:transition hover:file:bg-[#d5b37b]/20"
+                        disabled={mediaBusyKey === item.slotKey}
+                        onChange={(event) => handleMediaUpload(item.slotKey, item.type, event.target.files?.[0] || null)}
+                      />
+                    </div>
                     <p className="mt-2 text-xs leading-6 text-white/38">
                       {item.type === "image"
                         ? "Upload a replacement image for this exact slot on the public page."
-                        : "Upload a replacement music file for the public audio player."}
+                        : "Upload a replacement music file for the public audio player. YouTube links are also supported via the field above."}
                     </p>
                   </div>
                 ))}

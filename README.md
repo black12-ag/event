@@ -1,90 +1,87 @@
-# Buna House Event Platform ☕️
+# 🏛 Buna House Event Platform ☕️
 
-A sophisticated, modern event management platform for the **Buna House Opening Ceremony**. Built with Next.js and deployed on Cloudflare Pages, this platform provides a seamless RSVP experience for guests and a powerful administrative dashboard for event organizers.
+A premium, edge-first event invitation and RSVP platform designed for the **Buna House Opening Ceremony**. Built with **Next.js 14**, optimized for **Cloudflare Pages**, and powered by **Supabase**.
 
-🔗 **Live Platform**: [event.ethio-viral.com](https://event.ethio-viral.com/)
+🔗 **Live Application URL**: [https://event.ethio-viral.com/](https://event.ethio-viral.com/)
 
 ---
 
-## 🏛 System Architecture
+## 🏛 Platform Architecture
 
-The platform leverages a serverless, edge-first architecture to ensure maximum performance and global availability.
+The platform is architected for low latency and high availability using a serverless approach.
 
 ```mermaid
 graph TD;
-    Guest((Guest)) -->|RSVP/Check-in| CF[Cloudflare Pages Edge Runtime];
-    Admin((Admin)) -->|Manage Events| CF;
-    CF -->|Next.js App Router| App[Event Application];
-    App -->|Data & Auth| Supabase[(Supabase Postgres)];
-    App -->|Dynamic Assets| Storage[(Supabase Storage)];
-    Supabase -.->|Real-time Updates| App;
+    subgraph ClientLayer [Client Experience]
+        Guest((Guest)) -->|RSVP/Check-in| CF[Cloudflare Pages Edge];
+        Admin((Admin)) -->|Media/Settings| CF;
+    end
+
+    subgraph LogicLayer [Edge Application]
+        CF -->|Next.js 14| App[Event Dashboard];
+        App -->|Dynamic Media| MusicPlayer[ReactPlayer Streaming];
+    end
+
+    subgraph DataLayer [Backend Infrastructure]
+        App -->|Real-time Data| Supabase[(Supabase Postgres)];
+        App -->|Cloud Storage| Storage[(Supabase Storage)];
+        MusicPlayer -.->|Stream| YT[YouTube/External API];
+    end
 ```
 
 ---
 
-## ✨ Key Features
+## ✨ Premium Features
 
--   **Dynamic Event Invitations**: Personalized invitation pages with unique slugs for guests.
--   **Seamless RSVP Flow**: Interactive forms for guest confirmation and attendance tracking.
--   **Admin Dashboard**: Secure control panel for managing guest lists, event details, and branding.
--   **Edge Performance**: Deployed on Cloudflare's global network for sub-100ms response times.
--   **Rich Aesthetics**: Vibrant, premium design with custom typography and smooth animations.
+### 🎵 Enhanced Multi-Source Music
+Our music engine now supports a **dual-input system** managed directly from the Admin Dashboard:
+-   **Direct MP3 Uploads**: High-fidelity audio hosted locally on Supabase.
+-   **YouTube & External Streaming**: Instant integration via YouTube URLs for a dynamic atmosphere.
+-   **Smart Priority**: The system automatically prioritizes custom uploads while falling back to external links or default tracks.
+
+### 🖼 Professional Visual Experience
+-   **High-Res Logo Integration**: Consistent branding from the favicon to the hero section.
+-   **Dynamic Media Slots**: Real-time management of images and background assets.
+-   **Mobile-First Design**: Smooth animations and responsive transitions for a luxurious mobile experience.
+
+### 📊 Real-time RSVP Management
+-   **Personalized Invitations**: Unique links for honored guests.
+-   **Dynamic Guest List**: View attendance and guest messages in real-time.
+-   **Admin Control Panel**: Secure, PIN-protected dashboard for all event configurations.
 
 ---
 
-## 🛠 Tech Stack
+## 🛠 Technology Stack
 
--   **Framework**: [Next.js 14](https://nextjs.org/) (App Router)
--   **Runtime**: [Cloudflare Pages](https://pages.cloudflare.com/) (Edge Runtime)
--   **Database & Auth**: [Supabase](https://supabase.com/)
--   **Styling**: Vanilla CSS & TailwindCSS
--   **Icons**: React Icons
+-   **Frontend**: [Next.js 14](https://nextjs.org/) (App Router, Edge Runtime)
+-   **Deployment**: [Cloudflare Pages](https://pages.cloudflare.com/) ⚡️
+-   **Database**: [Supabase](https://supabase.com/) (Postgres + Storage)
+-   **Audio Engine**: [React Player](https://www.npmjs.com/package/react-player)
+-   **Styling**: Vanilla CSS + TailwindCSS + Google Fonts (Ovo, Inter)
 
 ---
 
-## 🚀 Getting Started
+## 🚀 Deployment & Configuration
 
-### Prerequisites
-
--   Node.js 18+
--   Supabase Project
--   Cloudflare Account (for deployment)
-
-### Environment Variables
-
-Create a `.env.local` file with the following:
-
+### Environment Setup
+Standard configuration required in `.env.local`:
 ```env
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
-ADMIN_PIN=your_admin_pin
+NEXT_PUBLIC_SUPABASE_URL=...
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+SUPABASE_SERVICE_ROLE_KEY=...
+ADMIN_PIN=...
 ```
 
-### Installation
-
+### Build Pipeline
+Optimize for the edge using the native adapter:
 ```bash
-# Install dependencies
-npm install
-
-# Run the development server
-npm run dev
-
-# Build for Cloudflare Pages
+# Production Build
 npm run pages:build
+
+# Deployment Target
+.vercel/output/static
 ```
 
 ---
 
-## ⚙️ Deployment
-
-The project is optimized for Cloudflare Pages using the `@cloudflare/next-on-pages` adapter.
-
-1.  Push changes to GitHub.
-2.  Connect the repository to Cloudflare Pages.
-3.  Configure environment variables in the Cloudflare Dashboard.
-4.  Set the build command to `npm run pages:build` and the output directory to `.vercel/output/static`.
-
----
-
-© 2026 Buna House. All rights reserved.
+© 2026 Buna House. *Crafting coffee, community, and experiences.*
