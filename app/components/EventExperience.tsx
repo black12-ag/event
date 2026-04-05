@@ -150,6 +150,8 @@ export default function EventExperience({
   const inviteGreeting =
     invite && invite.inviteType === "named" && invite.guestName
       ? `${settings.heroGuestPrefix} ${invite.guestName},`
+      : settings.heroGuestPrefix
+      ? `${settings.heroGuestPrefix},`
       : "Welcome,";
 
   const heroStatusLabel =
@@ -294,7 +296,7 @@ export default function EventExperience({
                   <p className="mt-5 text-lg uppercase tracking-widest text-white">
                     {invite && invite.inviteType === "named"
                       ? `${settings.heroGuestPrefix} ${openingGuestName},`
-                      : "Welcome,"}
+                      : inviteGreeting}
                   </p>
                   <p className="mx-auto mt-5 max-w-sm text-sm font-legan text-white/90">
                     {settings.openingDescription || settings.heroDescription}
@@ -356,7 +358,7 @@ export default function EventExperience({
                     </button>
                   </div>
                   <p className="mt-6 text-xs uppercase tracking-[0.28em] text-white/50">
-                    Scroll down to explore the full invitation
+                    Scroll down to explore the full event page
                   </p>
                 </div>
               </div>
@@ -539,7 +541,7 @@ export default function EventExperience({
                     </select>
                     {invite ? (
                       <p className="mt-2 text-xs text-white/70">
-                        Maximum allowed for this link: {invite.allowedGuests}
+                        Link limit: {invite.allowedGuests} guest{invite.allowedGuests === 1 ? "" : "s"}
                       </p>
                     ) : null}
                   </div>
@@ -580,7 +582,7 @@ export default function EventExperience({
                 <div className="bg-black/50 text-white p-4 rounded-md mt-5">
                   <div className="max-h-[420px] overflow-y-auto">
                     {wishes.length === 0 ? (
-                      <p>No wishes available</p>
+                      <p>No messages yet</p>
                     ) : (
                       wishes.map((wish) => (
                         <div key={wish.id} className="mb-4">
