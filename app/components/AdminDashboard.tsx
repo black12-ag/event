@@ -102,7 +102,7 @@ const fieldHelp: Record<string, string> = {
   venueName: "Venue name shown in the event details and map section.",
   venueAddress: "Full address shown to guests on the public page.",
   mapLink: "Google Maps directions link opened when guests click the directions button.",
-  mapEmbedUrl: "Embedded map shown on the public venue section.",
+  mapEmbedUrl: "Embedded map shown on the public venue section. Use a Google embed URL or a normal google.com/maps?q=... link. maps.app.goo.gl share links will not show inside the page.",
   storyTitle: "Heading for the story/about section.",
   storyBody: "Main story or event description shown in the public story section.",
   scheduleTitle: "Heading above the highlights/gallery section.",

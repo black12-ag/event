@@ -22,6 +22,41 @@ const getAssetUrl = (media: MediaAsset[], slotKey: string, fallback = "") =>
 const fillTemplate = (value: string, variables: Record<string, string | number>) =>
   value.replace(/\{(\w+)\}/g, (_, key) => String(variables[key] ?? ""));
 
+const getEmbeddableMapUrl = (rawValue: string) => {
+  if (!rawValue) return "";
+
+  const value = rawValue.trim();
+
+  // Short/share links cannot be framed by Google.
+  if (value.includes("maps.app.goo.gl")) {
+    return "";
+  }
+
+  // Already an embeddable Google Maps URL.
+  if (
+    value.includes("google.com/maps/embed") ||
+    value.includes("google.com/maps?") && value.includes("output=embed")
+  ) {
+    return value;
+  }
+
+  try {
+    const url = new URL(value);
+
+    if (
+      (url.hostname.includes("google.com") || url.hostname.includes("maps.google.com")) &&
+      url.searchParams.get("q")
+    ) {
+      const q = url.searchParams.get("q");
+      return `https://www.google.com/maps?q=${encodeURIComponent(q || "")}&output=embed`;
+    }
+  } catch {
+    return "";
+  }
+
+  return "";
+};
+
 const formatDate = (value: string, options?: Intl.DateTimeFormatOptions) =>
   new Date(value).toLocaleString("en-US", {
     weekday: "long",
@@ -112,6 +147,10 @@ export default function EventExperience({
   const heroBackground = getAssetUrl(media, "hero-background", "/foto_2.jpg");
   const heroSide = getAssetUrl(media, "hero-side", "/foto_1_samping.jpg");
   const storyImage = getAssetUrl(media, "story-image", "/slide_4.jpg");
+  const embedMapUrl = useMemo(() => getEmbeddableMapUrl(settings.mapEmbedUrl || settings.mapLink), [
+    settings.mapEmbedUrl,
+    settings.mapLink,
+  ]);
 
   // Determine the best background music URL
   const musicAsset = media.find((item) => item.slotKey === "background-music");
@@ -469,14 +508,20 @@ export default function EventExperience({
                 >
                   {settings.mapButtonLabel}
                 </Link>
-                {settings.mapEmbedUrl ? (
+                {embedMapUrl ? (
                   <div className="mt-6 overflow-hidden rounded-3xl border border-white/20">
                     <iframe
-                      src={settings.mapEmbedUrl}
+                      src={embedMapUrl}
                       className="h-56 w-full"
                       loading="lazy"
+                      title={`${settings.venueName} map`}
+                      referrerPolicy="no-referrer-when-downgrade"
                     />
                   </div>
+                ) : settings.mapLink ? (
+                  <p className="mt-4 text-xs text-white/70">
+                    Map preview is not available for this link. Use the directions button to open it in Google Maps.
+                  </p>
                 ) : null}
               </div>
             </Slide>
