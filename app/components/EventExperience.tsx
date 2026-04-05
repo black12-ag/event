@@ -19,6 +19,9 @@ type EventExperienceProps = {
 const getAssetUrl = (media: MediaAsset[], slotKey: string, fallback = "") =>
   media.find((item) => item.slotKey === slotKey)?.publicUrl || fallback;
 
+const fillTemplate = (value: string, variables: Record<string, string | number>) =>
+  value.replace(/\{(\w+)\}/g, (_, key) => String(variables[key] ?? ""));
+
 const formatDate = (value: string, options?: Intl.DateTimeFormatOptions) =>
   new Date(value).toLocaleString("en-US", {
     weekday: "long",
@@ -158,12 +161,12 @@ export default function EventExperience({
 
   const heroStatusDetail =
     invite?.attendanceStatus === "attending"
-      ? `${invite.bringingCount} guest${invite.bringingCount === 1 ? "" : "s"} confirmed`
+      ? fillTemplate(settings.guestCountConfirmedLabel, { count: invite.bringingCount })
       : invite?.attendanceStatus === "not_attending"
-      ? "Thank you for letting us know"
+      ? settings.guestDeclinedDetail
       : invite
-      ? "Open the invitation and respond when you are ready"
-      : "Explore the event details below";
+      ? settings.guestPendingDetail
+      : settings.generalInviteDescription;
 
   const { ref: slide1Ref, inView: slide1InView } = useInView({ threshold: 0.4 });
   const { ref: slide2Ref, inView: slide2InView } = useInView({ threshold: 0.4 });
@@ -342,14 +345,14 @@ export default function EventExperience({
                       target="_blank"
                       className="cursor-pointer hover:text-white/70 text-sm rounded-full flex items-center gap-x-2 text-center font-legan bg-[#808080] w-fit px-4 py-2 text-white"
                     >
-                      {settings.directionsButtonLabel}
+                      {settings.mapButtonLabel}
                     </Link>
                     <button
                       type="button"
                       onClick={toggleMusic}
                       className="cursor-pointer hover:text-white/70 text-sm rounded-full flex items-center gap-x-2 text-center font-legan bg-[#4E4E4E] w-fit px-4 py-2 text-white"
                     >
-                      {isPlaying ? "Pause Music" : "Play Music"}
+                      {isPlaying ? settings.musicPauseLabel : settings.musicPlayLabel}
                     </button>
                   </div>
                   <p className="mt-6 text-xs uppercase tracking-[0.28em] text-white/50">
@@ -365,19 +368,19 @@ export default function EventExperience({
           <>
             <Slide backgroundImage={storyImage} className="flex items-end pb-16 px-12">
               <div ref={slide2Ref} className={`fadeInMove ${slide2InView ? "active" : ""}`}>
-                <p className="font-legan text-sm my-2 uppercase">Guest Invitation</p>
+                <p className="font-legan text-sm my-2 uppercase">{settings.inviteEyebrowLabel}</p>
                 <h1 className="text-xl md:text-3xl text-white font-ovo">
                   {displayedGuestName}
                 </h1>
                 <h3 className="font-thesignature text-2xl">
-                  {invite?.inviteType === "open" ? "Open Share Link" : "Personal Invite"}
+                  {invite?.inviteType === "open" ? settings.openInviteLabel : settings.namedInviteLabel}
                 </h3>
                 <p className="text-sm mt-5 font-legan text-[#CCCCCC]">
                   {invite
                     ? invite.inviteType === "open"
-                      ? `This shareable invitation allows up to ${invite.allowedGuests} guest${invite.allowedGuests > 1 ? "s" : ""}.`
-                      : `This private invitation allows up to ${invite.allowedGuests} guest${invite.allowedGuests > 1 ? "s" : ""}.`
-                    : "Explore the opening event details and join us for the celebration."}
+                      ? fillTemplate(settings.openInviteDescription, { allowedGuests: invite.allowedGuests })
+                      : fillTemplate(settings.namedInviteDescription, { allowedGuests: invite.allowedGuests })
+                    : settings.generalInviteDescription}
                 </p>
               </div>
             </Slide>
@@ -423,14 +426,14 @@ export default function EventExperience({
                       target="_blank"
                       className="cursor-pointer hover:text-white/70 text-sm rounded-full flex items-center gap-x-2 text-center font-legan bg-[#808080] w-fit px-4 py-2 text-white"
                     >
-                      {settings.directionsButtonLabel}
+                      {settings.mapButtonLabel}
                     </Link>
                     <button
                       type="button"
                       onClick={toggleMusic}
                       className="cursor-pointer hover:text-white/70 text-sm rounded-full flex items-center gap-x-2 text-center font-legan bg-[#4E4E4E] w-fit px-4 py-2 text-white"
                     >
-                      {isPlaying ? "Pause Music" : "Play Music"}
+                      {isPlaying ? settings.musicPauseLabel : settings.musicPlayLabel}
                     </button>
                   </div>
                 </div>
@@ -440,7 +443,7 @@ export default function EventExperience({
             <Slide backgroundImage={gallery[2]} className="flex flex-col items-center justify-end pb-16 px-12">
               <div ref={slide5Ref} className={`${slide5InView ? "active" : ""} fadeInMove flex items-center flex-col`}>
                 <h1 className="text-2xl text-center text-white font-ovo uppercase">
-                  Almost Time For Our Celebration
+                  {settings.countdownTitle}
                 </h1>
                 <CountdownStrip eventDate={settings.eventDate} />
               </div>
@@ -448,7 +451,7 @@ export default function EventExperience({
 
             <Slide backgroundImage={gallery[3]} className="flex flex-col justify-between pt-16 pb-24 px-12">
               <h1 ref={slide6Ref} className={`text-2xl text-white font-ovo fadeInMoveSlow ${slide6InView ? "active" : ""}`}>
-                Venue And Directions
+                {settings.venueSectionTitle}
               </h1>
               <div className={`mt-5 mx-auto flex flex-col fadeInMove ${slide6InView ? "active" : ""}`} ref={slide6Ref}>
                 <h3 className="uppercase font-ovo text-sm mt-5 mb-2">
@@ -462,7 +465,7 @@ export default function EventExperience({
                   target="_blank"
                   className="cursor-pointer hover:text-white/70 text-sm rounded-full flex items-center gap-x-2 text-center font-legan mt-5 bg-[#3B3B3B] w-fit px-6 py-2 text-white"
                 >
-                  Open In Google Maps
+                  {settings.mapButtonLabel}
                 </Link>
                 {settings.mapEmbedUrl ? (
                   <div className="mt-6 overflow-hidden rounded-3xl border border-white/20">

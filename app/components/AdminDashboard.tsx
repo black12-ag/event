@@ -23,6 +23,20 @@ const emptySettings: EventSettings = {
   heroPendingLabel: "",
   heroAttendingLabel: "",
   heroNotAttendingLabel: "",
+  inviteEyebrowLabel: "",
+  namedInviteLabel: "",
+  openInviteLabel: "",
+  namedInviteDescription: "",
+  openInviteDescription: "",
+  generalInviteDescription: "",
+  countdownTitle: "",
+  venueSectionTitle: "",
+  mapButtonLabel: "",
+  musicPlayLabel: "",
+  musicPauseLabel: "",
+  guestCountConfirmedLabel: "",
+  guestPendingDetail: "",
+  guestDeclinedDetail: "",
   openingNote: "",
   eventDate: "",
   venueName: "",
@@ -69,6 +83,20 @@ const fieldHelp: Record<string, string> = {
   heroPendingLabel: "Status label shown in the hero when the guest has not responded yet.",
   heroAttendingLabel: "Status label shown in the hero after the guest confirms attendance.",
   heroNotAttendingLabel: "Status label shown in the hero when the guest declines.",
+  inviteEyebrowLabel: "Small heading shown above the invite detail slide on guest links.",
+  namedInviteLabel: "Label shown on named guest links.",
+  openInviteLabel: "Label shown on open share links.",
+  namedInviteDescription: "Description shown on named guest links. Use {allowedGuests} to insert the guest limit.",
+  openInviteDescription: "Description shown on open share links. Use {allowedGuests} to insert the guest limit.",
+  generalInviteDescription: "Description shown on the public home page when there is no named guest.",
+  countdownTitle: "Heading shown above the countdown section.",
+  venueSectionTitle: "Heading shown above the venue and directions section.",
+  mapButtonLabel: "Text on the button that opens the map in a new tab.",
+  musicPlayLabel: "Label shown when music is paused.",
+  musicPauseLabel: "Label shown when music is playing.",
+  guestCountConfirmedLabel: "Detail line for confirmed guests. Use {count} to insert the confirmed number.",
+  guestPendingDetail: "Detail line shown while an invite is still waiting for a reply.",
+  guestDeclinedDetail: "Detail line shown when the guest declines.",
   openingNote: "Extra welcome note shown in the hero after opening.",
   eventDate: "Used for the event date display and live countdown.",
   venueName: "Venue name shown in the event details and map section.",
@@ -398,7 +426,7 @@ export default function AdminDashboard({
           <p className="font-legan text-sm uppercase tracking-[0.35em] text-[#d5b37b]">
             Admin Access
           </p>
-          <h1 className="mt-4 font-ovo text-4xl">Buna House Control Room</h1>
+          <h1 className="mt-4 font-ovo text-4xl">{settings.eventName || "Event Control Room"}</h1>
           <form className="mt-8 space-y-4" onSubmit={handleLogin}>
             <input
               type="password"
@@ -430,10 +458,10 @@ export default function AdminDashboard({
             <p className="font-legan text-sm uppercase tracking-[0.35em] text-[#d5b37b]">
               Admin Dashboard
             </p>
-            <h1 className="mt-3 font-ovo text-5xl">Buna House Event Manager</h1>
+            <h1 className="mt-3 font-ovo text-5xl">{settings.eventName || "Event Manager"}</h1>
             <p className="mt-3 max-w-2xl text-sm leading-7 text-white/62">
-              This dashboard controls the public event page. Update the event content first, then
-              replace media, then create guest links and watch responses.
+              This dashboard controls the public event page directly. Update the event content first,
+              then replace media, then create guest links and watch responses.
             </p>
           </div>
           <button
@@ -470,7 +498,7 @@ export default function AdminDashboard({
           </p>
           <div className="mt-5 grid gap-5 md:grid-cols-4">
             <div className="rounded-[1.5rem] border border-white/8 bg-white/5 p-5">
-              <p className="font-ovo text-2xl">1. Event Setup</p>
+              <p className="font-ovo text-2xl">1. Public Page Content</p>
               <p className="mt-3 text-sm leading-7 text-white/68">
                 Update the event name, hero text, event date, venue, map, and footer links.
               </p>
@@ -567,6 +595,9 @@ export default function AdminDashboard({
                     ["heroPendingLabel", "Pending Status Label"],
                     ["heroAttendingLabel", "Attending Status Label"],
                     ["heroNotAttendingLabel", "Not Attending Status Label"],
+                    ["inviteEyebrowLabel", "Invite Eyebrow Label"],
+                    ["namedInviteLabel", "Named Invite Label"],
+                    ["openInviteLabel", "Open Invite Label"],
                   ].map(([field, label]) => (
                     <label key={String(field)} className="grid gap-2 text-sm text-white/75">
                       {label}
@@ -609,6 +640,38 @@ export default function AdminDashboard({
             </div>
 
             <div className="mt-4 rounded-[1.5rem] border border-white/8 bg-[#0c0907] p-5">
+              <p className="font-ovo text-2xl">Invite Page Labels</p>
+              <p className="mt-2 text-sm leading-7 text-white/62">
+                These labels control the guest-specific invite page and the generic home invitation copy.
+              </p>
+              <div className="mt-5 grid gap-4">
+                {[
+                  ["namedInviteDescription", "Named Invite Description"],
+                  ["openInviteDescription", "Open Invite Description"],
+                  ["generalInviteDescription", "General Invite Description"],
+                  ["guestCountConfirmedLabel", "Confirmed Guest Detail"],
+                  ["guestPendingDetail", "Pending Guest Detail"],
+                  ["guestDeclinedDetail", "Declined Guest Detail"],
+                ].map(([field, label]) => (
+                  <label key={String(field)} className="grid gap-2 text-sm text-white/75">
+                    {label}
+                    <textarea
+                      value={(settings as any)[field]}
+                      onChange={(event) =>
+                        setSettings((current) => ({ ...current, [field]: event.target.value }))
+                      }
+                      rows={3}
+                      className="rounded-2xl border border-white/10 bg-[#17120d] px-4 py-3 text-white outline-none"
+                    />
+                    <span className="text-xs leading-6 text-white/42">
+                      {fieldHelp[String(field)]}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-4 rounded-[1.5rem] border border-white/8 bg-[#0c0907] p-5">
               <p className="font-ovo text-2xl">Event Details</p>
               <p className="mt-2 text-sm leading-7 text-white/62">
                 These values drive the countdown, venue block, and directions button.
@@ -619,6 +682,7 @@ export default function AdminDashboard({
                   ["venueName", "Venue Name"],
                   ["venueAddress", "Venue Address"],
                   ["directionsButtonLabel", "Directions Button Label"],
+                  ["countdownTitle", "Countdown Title"],
                 ].map(([field, label]) => (
                   <label key={String(field)} className="grid gap-2 text-sm text-white/75">
                     {label}
@@ -644,8 +708,10 @@ export default function AdminDashboard({
               </p>
               <div className="mt-5 grid gap-4 md:grid-cols-2">
                 {[
+                  ["venueSectionTitle", "Venue Section Title"],
                   ["mapLink", "Google Maps Link"],
                   ["mapEmbedUrl", "Embedded Map URL"],
+                  ["mapButtonLabel", "Map Button Label"],
                 ].map(([field, label]) => (
                   <label key={String(field)} className="grid gap-2 text-sm text-white/75">
                     {label}
@@ -758,6 +824,8 @@ export default function AdminDashboard({
                 ["tiktokUrl", "TikTok"],
                 ["whatsappUrl", "WhatsApp"],
                 ["telegramUrl", "Telegram"],
+                ["musicPlayLabel", "Music Play Label"],
+                ["musicPauseLabel", "Music Pause Label"],
               ].map(([field, label]) => (
                 <label key={String(field)} className="grid gap-2 text-sm text-white/75">
                   {label}

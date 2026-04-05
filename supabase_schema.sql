@@ -13,6 +13,20 @@ create table if not exists public.event_settings (
   hero_pending_label text not null default 'Awaiting your RSVP',
   hero_attending_label text not null default 'Confirmed attendance',
   hero_not_attending_label text not null default 'Unable to attend',
+  invite_eyebrow_label text not null default 'Guest Invitation',
+  named_invite_label text not null default 'Personal Invite',
+  open_invite_label text not null default 'Open Share Link',
+  named_invite_description text not null default 'This private invitation allows up to {allowedGuests} guests.',
+  open_invite_description text not null default 'This shareable invitation allows up to {allowedGuests} guests.',
+  general_invite_description text not null default 'Explore the opening event details and join us for the celebration.',
+  countdown_title text not null default 'Almost Time For Our Celebration',
+  venue_section_title text not null default 'Venue And Directions',
+  map_button_label text not null default 'Open In Google Maps',
+  music_play_label text not null default 'Play Music',
+  music_pause_label text not null default 'Pause Music',
+  guest_count_confirmed_label text not null default '{count} guests confirmed',
+  guest_pending_detail text not null default 'Open the invitation and respond when you are ready',
+  guest_declined_detail text not null default 'Thank you for letting us know',
   opening_note text not null default '',
   event_date timestamptz not null,
   venue_name text not null,
@@ -89,6 +103,20 @@ alter table public.event_settings add column if not exists hero_guest_prefix tex
 alter table public.event_settings add column if not exists hero_pending_label text not null default 'Awaiting your RSVP';
 alter table public.event_settings add column if not exists hero_attending_label text not null default 'Confirmed attendance';
 alter table public.event_settings add column if not exists hero_not_attending_label text not null default 'Unable to attend';
+alter table public.event_settings add column if not exists invite_eyebrow_label text not null default 'Guest Invitation';
+alter table public.event_settings add column if not exists named_invite_label text not null default 'Personal Invite';
+alter table public.event_settings add column if not exists open_invite_label text not null default 'Open Share Link';
+alter table public.event_settings add column if not exists named_invite_description text not null default 'This private invitation allows up to {allowedGuests} guests.';
+alter table public.event_settings add column if not exists open_invite_description text not null default 'This shareable invitation allows up to {allowedGuests} guests.';
+alter table public.event_settings add column if not exists general_invite_description text not null default 'Explore the opening event details and join us for the celebration.';
+alter table public.event_settings add column if not exists countdown_title text not null default 'Almost Time For Our Celebration';
+alter table public.event_settings add column if not exists venue_section_title text not null default 'Venue And Directions';
+alter table public.event_settings add column if not exists map_button_label text not null default 'Open In Google Maps';
+alter table public.event_settings add column if not exists music_play_label text not null default 'Play Music';
+alter table public.event_settings add column if not exists music_pause_label text not null default 'Pause Music';
+alter table public.event_settings add column if not exists guest_count_confirmed_label text not null default '{count} guests confirmed';
+alter table public.event_settings add column if not exists guest_pending_detail text not null default 'Open the invitation and respond when you are ready';
+alter table public.event_settings add column if not exists guest_declined_detail text not null default 'Thank you for letting us know';
 
 create index if not exists invites_slug_idx on public.invites(slug);
 create index if not exists invites_created_at_idx on public.invites(created_at desc);

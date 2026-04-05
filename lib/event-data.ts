@@ -22,6 +22,20 @@ const toSnakeEventSettings = (settings: EventSettings) => ({
   hero_pending_label: settings.heroPendingLabel,
   hero_attending_label: settings.heroAttendingLabel,
   hero_not_attending_label: settings.heroNotAttendingLabel,
+  invite_eyebrow_label: settings.inviteEyebrowLabel,
+  named_invite_label: settings.namedInviteLabel,
+  open_invite_label: settings.openInviteLabel,
+  named_invite_description: settings.namedInviteDescription,
+  open_invite_description: settings.openInviteDescription,
+  general_invite_description: settings.generalInviteDescription,
+  countdown_title: settings.countdownTitle,
+  venue_section_title: settings.venueSectionTitle,
+  map_button_label: settings.mapButtonLabel,
+  music_play_label: settings.musicPlayLabel,
+  music_pause_label: settings.musicPauseLabel,
+  guest_count_confirmed_label: settings.guestCountConfirmedLabel,
+  guest_pending_detail: settings.guestPendingDetail,
+  guest_declined_detail: settings.guestDeclinedDetail,
   opening_note: settings.openingNote,
   event_date: settings.eventDate,
   venue_name: settings.venueName,
@@ -61,6 +75,34 @@ const toCamelEventSettings = (item: any): EventSettings => ({
   heroAttendingLabel: item.hero_attending_label ?? defaultEventSettings.heroAttendingLabel,
   heroNotAttendingLabel:
     item.hero_not_attending_label ?? defaultEventSettings.heroNotAttendingLabel,
+  inviteEyebrowLabel:
+    item.invite_eyebrow_label ?? defaultEventSettings.inviteEyebrowLabel,
+  namedInviteLabel:
+    item.named_invite_label ?? defaultEventSettings.namedInviteLabel,
+  openInviteLabel:
+    item.open_invite_label ?? defaultEventSettings.openInviteLabel,
+  namedInviteDescription:
+    item.named_invite_description ?? defaultEventSettings.namedInviteDescription,
+  openInviteDescription:
+    item.open_invite_description ?? defaultEventSettings.openInviteDescription,
+  generalInviteDescription:
+    item.general_invite_description ?? defaultEventSettings.generalInviteDescription,
+  countdownTitle:
+    item.countdown_title ?? defaultEventSettings.countdownTitle,
+  venueSectionTitle:
+    item.venue_section_title ?? defaultEventSettings.venueSectionTitle,
+  mapButtonLabel:
+    item.map_button_label ?? defaultEventSettings.mapButtonLabel,
+  musicPlayLabel:
+    item.music_play_label ?? defaultEventSettings.musicPlayLabel,
+  musicPauseLabel:
+    item.music_pause_label ?? defaultEventSettings.musicPauseLabel,
+  guestCountConfirmedLabel:
+    item.guest_count_confirmed_label ?? defaultEventSettings.guestCountConfirmedLabel,
+  guestPendingDetail:
+    item.guest_pending_detail ?? defaultEventSettings.guestPendingDetail,
+  guestDeclinedDetail:
+    item.guest_declined_detail ?? defaultEventSettings.guestDeclinedDetail,
   openingNote: item.opening_note ?? defaultEventSettings.openingNote,
   eventDate: item.event_date ?? defaultEventSettings.eventDate,
   venueName: item.venue_name ?? defaultEventSettings.venueName,
